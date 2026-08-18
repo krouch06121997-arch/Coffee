@@ -9,60 +9,98 @@
 </head>
 <body class="bg-light">
     <div class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>👨‍💼 Admin Dashboard (<%= shopId %>)</h2>
             <span class="badge bg-warning text-dark fs-5">ចំណូលថ្ងៃនេះ៖ $<%= grandTotal.toFixed(2) %></span>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
-            <h4 class="mb-3">📊 បញ្ជីកុម្ម៉ង់ Real-time</h4>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>តុ</th>
-                            <th>ទំនិញ</th>
-                            <th>ចំនួន</th>
-                            <th>ចំណាំ</th>
-                            <th>ស្ថានភាព</th>
-                            <th>សកម្មភាព</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sales-list">
-                        <% salesItems.forEach(s => { %>
-                        <tr id="order-row-<%= s.id %>">
-                            <td><span class="badge bg-secondary">តុ <%= s.table_num %></span></td>
-                            <td class="fw-bold"><%= s.item_name %></td>
-                            <td><%= s.quantity %> (ស្ករ <%= s.sugar %>)</td>
-                            <td class="text-muted"><small><%= s.note %></small></td>
-                            
-                            <!-- បង្ហាញ Status -->
-                            <td>
-                                <% if(s.status === 'pending') { %>
-                                    <span class="badge bg-warning text-dark" id="status-badge-<%= s.id %>">⏳ កំពុងឆុង</span>
-                                <% } else if(s.status === 'ready') { %>
-                                    <span class="badge bg-info text-dark" id="status-badge-<%= s.id %>">☕ ឆុងរួចរាល់</span>
-                                <% } else { %>
-                                    <span class="badge bg-success" id="status-badge-<%= s.id %>">✅ អតិថិជនបានទទួល</span>
-                                <% } %>
-                            </td>
+        <div class="row g-4">
+            <!-- ផ្នែកទី១៖ គ្រប់គ្រង Menu (បន្ថែម និងលុប) -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                    <h4 class="mb-3">➕ បន្ថែម Menu ថ្មី</h4>
+                    <form action="/<%= shopId %>/admin/menu/add" method="POST">
+                        <div class="mb-2">
+                            <label class="form-label small">ឈ្មោះភេសជ្ជៈ</label>
+                            <input type="text" name="name" class="form-control rounded-3" required placeholder="ឧ. ឡាតេ (Latte)">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">តម្លៃ ($)</label>
+                            <input type="number" step="0.01" name="price" class="form-control rounded-3" required placeholder="2.50">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold">រក្សាទុក Menu</button>
+                    </form>
+                </div>
 
-                            <!-- ប៊ូតុងប្តូរ Status -->
-                            <td>
-                                <% if(s.status === 'pending') { %>
-                                    <form action="/<%= shopId %>/admin/order-status" method="POST" class="d-inline">
-                                        <input type="hidden" name="order_id" value="<%= s.id %>">
-                                        <input type="hidden" name="status" value="ready">
-                                        <button type="submit" class="btn btn-sm btn-primary rounded-3">ឆុងរួចរាល់</button>
-                                    </form>
-                                <% } else { %>
-                                    <span class="text-muted small">-</span>
-                                <% } %>
-                            </td>
-                        </tr>
+                <div class="card border-0 shadow-sm rounded-4 p-3">
+                    <h4 class="mb-3">📋 បញ្ជី Menu ដែលមាន</h4>
+                    <ul class="list-group list-group-flush">
+                        <% menuItems.forEach(m => { %>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div>
+                                <span class="fw-bold"><%= m.name %></span>
+                                <span class="text-success ms-2">$<%= m.price.toFixed(2) %></span>
+                            </div>
+                            <form action="/<%= shopId %>/admin/menu/delete/<%= m.id %>" method="POST" class="m-0">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-3" onclick="return confirm('តើអ្នកពិតជាចង់លុបមែនទេ?')">លុប</button>
+                            </form>
+                        </li>
                         <% }); %>
-                    </tbody>
-                </table>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ផ្នែកទី២៖ បញ្ជីកុម្ម៉ង់ Real-time -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 p-3">
+                    <h4 class="mb-3">📊 បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ (Real-time)</h4>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>តុ</th>
+                                    <th>ទំនិញ</th>
+                                    <th>ចំនួន</th>
+                                    <th>ចំណាំ</th>
+                                    <th>ស្ថានភាព</th>
+                                    <th>សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sales-list">
+                                <% salesItems.forEach(s => { %>
+                                <tr id="order-row-<%= s.id %>">
+                                    <td><span class="badge bg-secondary">តុ <%= s.table_num %></span></td>
+                                    <td class="fw-bold"><%= s.item_name %></td>
+                                    <td><%= s.quantity %> (ស្ករ <%= s.sugar %>)</td>
+                                    <td class="text-muted"><small><%= s.note %></small></td>
+                                    
+                                    <td>
+                                        <% if(s.status === 'pending') { %>
+                                            <span class="badge bg-warning text-dark" id="status-badge-<%= s.id %>">⏳ កំពុងឆុង</span>
+                                        <% } else if(s.status === 'ready') { %>
+                                            <span class="badge bg-info text-dark" id="status-badge-<%= s.id %>">☕ ឆុងរួចរាល់</span>
+                                        <% } else { %>
+                                            <span class="badge bg-success" id="status-badge-<%= s.id %>">✅ អតិថិជនបានទទួល</span>
+                                        <% } %>
+                                    </td>
+
+                                    <td>
+                                        <% if(s.status === 'pending') { %>
+                                            <form action="/<%= shopId %>/admin/order-status" method="POST" class="d-inline">
+                                                <input type="hidden" name="order_id" value="<%= s.id %>">
+                                                <input type="hidden" name="status" value="ready">
+                                                <button type="submit" class="btn btn-sm btn-primary rounded-3">ឆុងរួចរាល់</button>
+                                            </form>
+                                        <% } else { %>
+                                            <span class="text-muted small">-</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -72,7 +110,6 @@
         const shopId = "<%= shopId %>";
         socket.emit('join_shop', shopId);
 
-        // Order ថ្មីមកដល់
         socket.on('new_order', (order) => {
             const tbody = document.getElementById('sales-list');
             const newRow = `
@@ -95,7 +132,6 @@
             new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
         });
 
-        // ទទួលបានសញ្ញាបញ្ជាក់ថា "អតិថិជនបានទទួលរួចរាល់" (Customer Confirmed)
         socket.on('customer_confirmed', (data) => {
             const badge = document.getElementById(`status-badge-${data.orderId}`);
             if(badge) {
@@ -106,3 +142,4 @@
     </script>
 </body>
 </html>
+
