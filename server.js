@@ -173,5 +173,9 @@ app.post('/:shopId/admin/menu/add', (req, res) => {
 
 
 const PORT = process.env.PORT || 8000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
+// '0.0.0.0' អនុញ្ញាតឱ្យឧបករណ៍គ្រប់ក្នុង Wi-Fi អាច Scan ចូលបាន
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`☕ Coffee POS Server កំពុងដំណើរការលើ Port ${PORT}`);
+    });
+    
