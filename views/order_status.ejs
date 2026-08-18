@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ស្ថានភាពកុម្ម៉ង់ - តុ <%= order.table_num %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="bg-light">
+    <div class="container py-4 text-center" style="max-width: 450px;">
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h4 class="fw-bold mb-1">ស្ថានភាពកុម្ម៉ង់ ☕</h4>
+            <p class="text-muted small">តុលេខ <%= order.table_num %> | លេខ Order: #<%= order.id %></p>
+            <hr>
+
+            <!-- បង្ហាញ Status កំពុងរង់ចាំ / រួចរាល់ -->
+            <div id="status-box" class="py-3">
+                <% if(order.status === 'pending') { %>
+                    <div class="spinner-border text-warning mb-2" style="width: 3rem; height: 3rem;"></div>
+                    <h5 class="text-warning fw-bold">⏳ កំពុងរង់ចាំ និងឆុងភេសជ្ជៈ...</h5>
+                    <p class="text-muted small">សូមរង់ចាំបន្តិច ភេសជ្ជៈរបស់អ្នកកំពុងរៀបចំ។</p>
+                <% } else if(order.status === 'ready') { %>
+                    <h1 class="display-3">🎉</h1>
+                    <h4 class="text-success fw-bold">✅ ភេសជ្ជៈឆុងរួចរាល់ហើយ!</h4>
+                    <p class="text-dark">សូមអញ្ជើញទទួលភេសជ្ជៈរបស់អ្នក។</p>
+                <% } else { %>
+                    <h1 class="display-3">🥰</h1>
+                    <h4 class="text-primary fw-bold">បានទទួលភេសជ្ជៈរួចរាល់</h4>
+                    <p class="text-muted small">សូមពិសាដោយរីករាយ!</p>
+                <% } %>
+            </div>
+
+            <!-- ព័ត៌មានកុម្ម៉ង់ -->
+            <div class="bg-light p-3 rounded-3 text-start mb-3">
+                <div class="d-flex justify-content-between fw-bold">
+                    <span><%= order.item_name %> x<%= order.quantity %></span>
+                    <span>$<%= order.total.toFixed(2) %></span>
+                </div>
+                <small class="text-muted">ស្ករ៖ <%= order.sugar %> | ចំណាំ៖ <%= order.note %></small>
+            </div>
+
+            <!-- ប៊ូតុងអតិថិជនចុច "បានទទួលភេសជ្ជៈ" -->
+            <div id="confirm-btn-area" class="<%= order.status === 'ready' ? '' : 'd-none' %>">
+                <button onclick="confirmReceived()" class="btn btn-success btn-lg w-100 rounded-3 fw-bold shadow">
+                    👌 បានទទួលភេសជ្ជៈរួចរាល់
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const orderId = "<%= order.id %>";
+        const shopId = "<%= shopId %>";
+
+        socket.emit('join_order', orderId);
+
+        // ទទួលដំណឹងពីម្ចាស់ហាង ពេលស្ថានភាពកែប្រែ
+        socket.on('status_change', (data) => {
+            if(data.status === 'ready') {
+                document.getElementById('status-box').innerHTML = `
+                    <h1 class="display-3">🎉</h1>
+                    <h4 class="text-success fw-bold">✅ ភេសជ្ជៈឆុងរួចរាល់ហើយ!</h4>
+                    <p class="text-dark">សូមអញ្ជើញទទួលភេសជ្ជៈរបស់អ្នក។</p>
+                `;
+                document.getElementById('confirm-btn-area').classList.remove('d-none');
+                
+                // សំឡេង Alert ជូនអតិថិជន
+                new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
+            } else if(data.status === 'completed') {
+                document.getElementById('status-box').innerHTML = `
+                    <h1 class="display-3">🥰</h1>
+                    <h4 class="text-primary fw-bold">បានទទួលភេសជ្ជៈរួចរាល់</h4>
+                    <p class="text-muted small">សូមពិសាដោយរីករាយ!</p>
+                `;
+                document.getElementById('confirm-btn-area').classList.add('d-none');
+            }
+        });
+
+        function confirmReceived() {
+            fetch(`/${shopId}/customer/confirm-received`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order_id: orderId })
+            }).then(res => res.json()).then(data => {
+                if(data.success) {
+                    document.getElementById('confirm-btn-area').classList.add('d-none');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
