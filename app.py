@@ -6,9 +6,19 @@ app = Flask(__name__)
 def init_db():
     conn = sqlite3.connect('coffee_shop.db')
     cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS menu (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, price REAL NOT NULL)''')
-    # បន្ថែម Column sugar ទៅក្នុង Table sales
-    cursor.execute('''CREATE TABLE IF NOT EXISTS sales (id INTEGER PRIMARY KEY AUTOINCREMENT, table_num INTEGER, item_name TEXT, quantity INTEGER, sugar TEXT, total REAL)''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS menu (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        name TEXT NOT NULL, 
+        price REAL NOT NULL
+    )''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS sales (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        table_num INTEGER, 
+        item_name TEXT, 
+        quantity INTEGER, 
+        sugar TEXT, 
+        total REAL
+    )''')
     
     cursor.execute("SELECT COUNT(*) FROM menu")
     if cursor.fetchone()[0] == 0:
@@ -18,19 +28,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# ពិនិត្យ និងបន្ថែម Column sugar ប្រសិនជា database មានស្រាប់
-def check_db_schema():
-    conn = sqlite3.connect('coffee_shop.db')
-    cursor = conn.cursor()
-    try:
-        cursor.execute("ALTER TABLE sales ADD COLUMN sugar TEXT DEFAULT '100%'")
-        conn.commit()
-    except sqlite3.OperationalError:
-        pass # មាន Column sugar រួចហើយ
-    conn.close()
-
 init_db()
-check_db_schema()
 
 @app.route('/')
 def index():
@@ -72,9 +70,9 @@ def index():
                             
                             <div class="row g-2 align-items-center">
                                 <div class="col-5">
-                                    <label class="form-label mb-1 style='font-size:12px;'"><small>🍬 កម្រិតស្ករ</small></label>
+                                    <label class="form-label mb-1"><small>🍬 ស្ករ</small></label>
                                     <select name="sugar" class="form-select form-select-sm rounded-3">
-                                        <option value="100%">100% (ធម្មតា)</option>
+                                        <option value="100%">100%</option>
                                         <option value="75%">75%</option>
                                         <option value="50%">50%</option>
                                         <option value="25%">25%</option>
@@ -144,7 +142,8 @@ def admin():
     cursor = conn.cursor()
     cursor.execute("SELECT SUM(total) FROM sales")
     grand_total = cursor.fetchone()[0] or 0.0
-    cursor.execute("SELECT * FROM sales ORDER BY id DESC LIMIT 20")
+    # រើសយក Column ច្បាស់ៗតាមលំដាប់លំដោយ
+    cursor.execute("SELECT table_num, item_name, quantity, sugar, total FROM sales ORDER BY id DESC LIMIT 20")
     sales = cursor.fetchall()
     conn.close()
 
@@ -174,16 +173,22 @@ def admin():
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
-                            <tr><th>តុ</th><th>ទំនិញ</th><th>ចំនួន</th><th>ស្ករ</th><th>សរុប</th></tr>
+                            <tr>
+                                <th>តុ</th>
+                                <th>ទំនិញ</th>
+                                <th>ចំនួន</th>
+                                <th>ស្ករ</th>
+                                <th>សរុប</th>
+                            </tr>
                         </thead>
                         <tbody>
                             {% for s in sales %}
                             <tr>
-                                <td><span class="badge bg-secondary">តុ {{s[1]}}</span></td>
-                                <td class="fw-bold">{{s[2]}}</td>
-                                <td>{{s[3]}}</td>
-                                <td><span class="badge bg-info text-dark">{{s[4] if s[4] else '100%'}}</span></td>
-                                <td class="text-success fw-bold">${{ "%.2f"|format(s[5] if s[5] else s[4]) }}</td>
+                                <td><span class="badge bg-secondary">តុ {{s[0]}}</span></td>
+                                <td class="fw-bold">{{s[1]}}</td>
+                                <td>{{s[2]}}</td>
+                                <td><span class="badge bg-info text-dark">{{s[3]}}</span></td>
+                                <td class="text-success fw-bold">${{ "%.2f"|format(s[4]) }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -246,4 +251,3 @@ def delete_menu(id):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
-
