@@ -1,0 +1,34 @@
+name: Build Android APK
+
+on:
+  push:
+      branches:
+            - main
+
+            jobs:
+              build:
+                  runs-on: ubuntu-latest
+                      steps:
+                            - name: Checkout Code
+                                    uses: actions/checkout@v3
+
+                                          - name: Setup Node.js
+                                                  uses: actions/setup-node@v3
+                                                          with:
+                                                                    node-version: '18'
+
+                                                                          - name: Install Dependencies
+                                                                                  run: npm install
+
+                                                                                        - name: Setup Java JDK
+                                                                                                uses: actions/setup-java@v3
+                                                                                                        with:
+                                                                                                                  distribution: 'zulu'
+                                                                                                                            java-version: '17'
+
+                                                                                                                                  - name: Build
+                                                                                                                                          run: |
+                                                                                                                                                    # ជំហាននេះសម្រាប់ Build ឯកសារ (ឧទាហរណ៍ប្រើ npm build ប្រសិនបើមាន)
+                                                                                                                                                              # អ្នកអាចបន្ថែម command ផ្សេងៗនៅទីនេះ
+                                                                                                                                                                        echo "Building project..."
+                                                                                                                                                                        
