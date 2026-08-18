@@ -154,6 +154,24 @@ app.post('/:shopId/customer/confirm-received', (req, res) => {
     });
 });
 
+app.get('/', (req, res) => {
+    res.redirect('/shop1/?table=1');
+});
+
+
+
+// បន្ថែម Menu ថ្មី
+app.post('/:shopId/admin/menu/add', (req, res) => {
+    const shopId = req.params.shopId;
+    const { name, price } = req.body;
+    db.run("INSERT INTO menu (shop_id, name, price) VALUES (?, ?, ?)", [shopId, name, price], () => {
+        // ប្រកាសប្រាប់អេក្រង់អតិថិជនឱ្យ Refresh ទាញយក Menu ថ្មី
+        io.to(shopId).emit('menu_updated');
+        res.redirect(`/${shopId}/admin`);
+    });
+});
+
+
 const PORT = process.env.PORT || 8000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
