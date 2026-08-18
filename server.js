@@ -11,6 +11,7 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// ភ្ជាប់ Database SQLite
 const db = new sqlite3.Database('./coffee_shop.db', (err) => {
     if (!err) {
         db.run(`CREATE TABLE IF NOT EXISTS menu (
@@ -20,7 +21,6 @@ const db = new sqlite3.Database('./coffee_shop.db', (err) => {
             price REAL NOT NULL
         )`);
         
-        // បន្ថែម column status (pending, ready, completed)
         db.run(`CREATE TABLE IF NOT EXISTS sales (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
             shop_id TEXT NOT NULL DEFAULT 'shop1',
@@ -43,7 +43,7 @@ io.on('connection', (socket) => {
 
 // ----------------- ROUTES ----------------- //
 
-// ទំព័រកុម្ម៉ង់ Menu សម្រាប់អតិថិជន
+// ១. ទំព័រកុម្ម៉ង់ Menu សម្រាប់អតិថិជន
 app.get('/:shopId/', (req, res) => {
     const shopId = req.params.shopId;
     const tableNum = req.query.table || 1;
@@ -52,7 +52,7 @@ app.get('/:shopId/', (req, res) => {
     });
 });
 
-// ទំព័រតាមដានស្ថានភាព Order របស់អតិថិជន (Order Tracking)
+// ២. ទំព័រតាមដានស្ថានភាព Order របស់អតិថិជន (Order Tracking)
 app.get('/:shopId/order-status/:orderId', (req, res) => {
     const { shopId, orderId } = req.params;
     db.get("SELECT * FROM sales WHERE id = ? AND shop_id = ?", [orderId, shopId], (err, order) => {
@@ -61,7 +61,7 @@ app.get('/:shopId/order-status/:orderId', (req, res) => {
     });
 });
 
-// ផ្ញើ Order ថ្មី
+// ៣. ទទួលការកុម្ម៉ង់ថ្មីពីអតិថិជន
 app.post('/:shopId/order', (req, res) => {
     const shopId = req.params.shopId;
     const { table, item_name, price, qty, sugar, note } = req.body;
@@ -83,41 +83,13 @@ app.post('/:shopId/order', (req, res) => {
                 status: 'pending'
             };
 
-            // ប្រកាសទៅកាន់ Admin
             io.to(shopId).emit('new_order', newOrder);
-
-            // បញ្ជូនអតិថិជនទៅកាន់ទំព័រ Order Tracking ភ្លាមៗ
             res.redirect(`/${shopId}/order-status/${orderId}`);
         }
     );
 });
 
-// ម្ចាស់ហាងប្តូរ Status ថា "ឆុងរួចរាល់ (Ready)"
-app.post('/:shopId/admin/order-status', (req, res) => {
-    const { shopId } = req.params;
-    const { order_id, status } = req.body;
-
-    db.run("UPDATE sales SET status = ? WHERE id = ? AND shop_id = ?", [status, order_id, shopId], () => {
-        // ប្រកាសទៅអេក្រង់អតិថិជនថា កាហ្វេឆុងរួចរាល់ហើយ
-        io.to(`order_${order_id}`).emit('status_change', { status });
-        res.redirect(`/${shopId}/admin`);
-    });
-});
-
-// អតិថិជនចុចប៊ូតុង "បានទទួលកាហ្វេរួចរាល់ (Received Confirmation)"
-app.post('/:shopId/customer/confirm-received', (req, res) => {
-    const { shopId } = req.params;
-    const { order_id } = req.body;
-
-    db.run("UPDATE sales SET status = 'completed' WHERE id = ? AND shop_id = ?", [order_id, shopId], () => {
-        // ប្រកាសទៅអេក្រង់ Admin ថា អតិថិជនបានទទួលរួចរាល់ហើយ (Customer Received)
-        io.to(shopId).emit('customer_confirmed', { orderId: order_id });
-        io.to(`order_${order_id}`).emit('status_change', { status: 'completed' });
-        res.json({ success: true });
-    });
-});
-
-// ទំព័រ Admin Dashboard
+// ៤. ទំព័រ Admin Dashboard (មើល Menu, ប្រវត្តិលក់ប្រចាំថ្ងៃ និងគ្រប់គ្រង Status)
 app.get('/:shopId/admin', (req, res) => {
     const shopId = req.params.shopId;
     db.all(
@@ -140,6 +112,46 @@ app.get('/:shopId/admin', (req, res) => {
             );
         }
     );
+});
+
+// ៥. មុខងារ Admin បន្ថែម Menu ថ្មី
+app.post('/:shopId/admin/menu/add', (req, res) => {
+    const shopId = req.params.shopId;
+    const { name, price } = req.body;
+    db.run("INSERT INTO menu (shop_id, name, price) VALUES (?, ?, ?)", [shopId, name, price], () => {
+        res.redirect(`/${shopId}/admin`);
+    });
+});
+
+// ៦. មុខងារ Admin លុប Menu ចោល
+app.post('/:shopId/admin/menu/delete/:id', (req, res) => {
+    const { shopId, id } = req.params;
+    db.run("DELETE FROM menu WHERE id = ? AND shop_id = ?", [id, shopId], () => {
+        res.redirect(`/${shopId}/admin`);
+    });
+});
+
+// ၇. ម្ចាស់ហាងប្តូរ Status Order ថា "ឆុងរួចរាល់ (Ready)"
+app.post('/:shopId/admin/order-status', (req, res) => {
+    const { shopId } = req.params;
+    const { order_id, status } = req.body;
+
+    db.run("UPDATE sales SET status = ? WHERE id = ? AND shop_id = ?", [status, order_id, shopId], () => {
+        io.to(`order_${order_id}`).emit('status_change', { status });
+        res.redirect(`/${shopId}/admin`);
+    });
+});
+
+// ៨. អតិថិជនចុចបញ្ជាក់ថា "បានទទួលភេសជ្ជៈរួចរាល់"
+app.post('/:shopId/customer/confirm-received', (req, res) => {
+    const { shopId } = req.params;
+    const { order_id } = req.body;
+
+    db.run("UPDATE sales SET status = 'completed' WHERE id = ? AND shop_id = ?", [order_id, shopId], () => {
+        io.to(shopId).emit('customer_confirmed', { orderId: order_id });
+        io.to(`order_${order_id}`).emit('status_change', { status: 'completed' });
+        res.json({ success: true });
+    });
 });
 
 const PORT = process.env.PORT || 8000;
