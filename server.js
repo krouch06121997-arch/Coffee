@@ -1,11 +1,9 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const session = require('express-session');
-const path = require('path');
 
 const app = express();
 
-// Set Up Middleware
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -15,7 +13,6 @@ app.use(session({
     saveUninitialized: true
 }));
 
-// Setup Database
 const db = new sqlite3.Database('./coffee_shop.db', (err) => {
     if (!err) {
         db.run(`CREATE TABLE IF NOT EXISTS menu (
@@ -34,7 +31,6 @@ const db = new sqlite3.Database('./coffee_shop.db', (err) => {
     }
 });
 
-// Middleware សម្រាប់ការពារ Admin Route
 function checkAdminAuth(req, res, next) {
     if (req.session.isAdmin) {
         next();
@@ -43,9 +39,7 @@ function checkAdminAuth(req, res, next) {
     }
 }
 
-// ----------------- Public Routes (សម្រាប់អតិថិជន) ----------------- //
-
-// ទំព័រ Menu (កុម្ម៉ង់ដោយមិនបាច់ Login)
+// ទំព័រ Menu សម្រាប់អតិថិជន
 app.get('/', (req, res) => {
     const tableNum = req.query.table || 1;
     db.all("SELECT * FROM menu", [], (err, items) => {
@@ -54,18 +48,22 @@ app.get('/', (req, res) => {
     });
 });
 
-// ទទួលការកុម្ម៉ង់ពីអតិថិជន
+// ទទួល Order និងរក្សាទុកព័ត៌មានស្ករ
 app.post('/order', (req, res) => {
     const { table, item_name, price, qty, sugar } = req.body;
+    const sugarVal = sugar || '100%';
     const total = parseFloat(price) * parseInt(qty);
 
     db.run(
         `INSERT INTO sales (table_num, item_name, quantity, sugar, total) VALUES (?, ?, ?, ?, ?)`,
-        [table, item_name, qty, sugar, total],
+        [table, item_name, qty, sugarVal, total],
         (err) => {
+            if (err) {
+                console.error(err.message);
+            }
             res.send(`
                 <script>
-                    alert('✅ កុម្ម៉ង់បានជោគជ័យ!');
+                    alert('✅ កុម្ម៉ង់បានជោគជ័យ! (ស្ករ: ${sugarVal})');
                     window.location.href = '/?table=${table}';
                 </script>
             `);
@@ -73,9 +71,7 @@ app.post('/order', (req, res) => {
     );
 });
 
-// ----------------- Admin Routes (សម្រាប់ Admin) ----------------- //
-
-// ទំព័រ Login
+// Admin Login
 app.get('/login', (req, res) => {
     res.send(`
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -89,7 +85,6 @@ app.get('/login', (req, res) => {
     `);
 });
 
-// ប្រតិបត្តិការ Login (Password: admin123)
 app.post('/login', (req, res) => {
     const { password } = req.body;
     if (password === 'admin123') {
@@ -100,25 +95,23 @@ app.post('/login', (req, res) => {
     }
 });
 
-// Logout
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login');
 });
 
-// ទំព័រ Admin Dashboard & គ្រប់គ្រង Menu
+// Admin Dashboard
 app.get('/admin', checkAdminAuth, (req, res) => {
     db.all("SELECT * FROM menu", [], (err, menuItems) => {
         db.all("SELECT * FROM sales ORDER BY id DESC LIMIT 20", [], (err, salesItems) => {
             db.get("SELECT SUM(total) as grandTotal FROM sales", [], (err, row) => {
-                const grandTotal = row.grandTotal || 0;
-                res.render('admin', { menuItems, salesItems, grandTotal });
+                const grandTotal = (row && row.grandTotal) ? row.grandTotal : 0;
+                res.render('admin', { menuItems: menuItems || [], salesItems: salesItems || [], grandTotal });
             });
         });
     });
 });
 
-// បន្ថែម Menu ថ្មី
 app.post('/admin/menu/add', checkAdminAuth, (req, res) => {
     const { name, price } = req.body;
     db.run("INSERT INTO menu (name, price) VALUES (?, ?)", [name, price], () => {
@@ -126,7 +119,6 @@ app.post('/admin/menu/add', checkAdminAuth, (req, res) => {
     });
 });
 
-// លុប Menu
 app.get('/admin/menu/delete/:id', checkAdminAuth, (req, res) => {
     const id = req.params.id;
     db.run("DELETE FROM menu WHERE id = ?", [id], () => {
@@ -137,4 +129,3 @@ app.get('/admin/menu/delete/:id', checkAdminAuth, (req, res) => {
 app.listen(8000, () => {
     console.log('Server is running on http://localhost:8000');
 });
-
