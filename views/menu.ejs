@@ -3,19 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>កុម្ម៉ង់កាហ្វេ - តុទី <%= tableNum %></title>
+    <title>កុម្ម៉ង់កាហ្វេ - តុ <%= tableNum %></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Kantumruy Pro', sans-serif, system-ui; }
+    </style>
 </head>
 <body class="bg-light">
     <div class="container py-4" style="max-width: 500px;">
+        <!-- Header បង្ហាញលេខតុ -->
         <div class="card shadow-sm mb-4 border-0 rounded-4 bg-primary text-white text-center p-3">
-            <h3 class="m-0">☕ កុម្ម៉ង់កាហ្វេ</h3>
-            <span class="badge bg-warning text-dark fs-6 mt-1">តុលេខ <%= tableNum %></span>
+            <h3 class="m-0 fw-bold">☕ កុម្ម៉ង់កាហ្វេ</h3>
+            <div>
+                <span class="badge bg-warning text-dark fs-6 mt-2">តុលេខ <%= tableNum %></span>
+            </div>
         </div>
 
+        <!-- បញ្ជី Menu ភេសជ្ជៈ -->
         <div class="row g-3">
-            <% if(items.length === 0) { %>
-                <p class="text-center text-muted">មិនទាន់មាន Menu ឡើយ!</p>
+            <% if (items.length === 0) { %>
+                <div class="text-center py-5 text-muted">
+                    <h5>មិនទាន់មាន Menu នៅឡើយទេ</h5>
+                    <small>សូមទាក់ទងបុគ្គលិកដើម្បីបន្ថែម Menu</small>
+                </div>
             <% } %>
 
             <% items.forEach(item => { %>
@@ -25,28 +35,41 @@
                         <h5 class="mb-0 fw-bold"><%= item.name %></h5>
                         <span class="text-success fw-bold fs-5">$<%= item.price.toFixed(2) %></span>
                     </div>
-                    <form action="/order" method="POST">
+                    
+                    <form action="/<%= shopId %>/order" method="POST">
                         <input type="hidden" name="table" value="<%= tableNum %>">
                         <input type="hidden" name="item_name" value="<%= item.name %>">
                         <input type="hidden" name="price" value="<%= item.price %>">
                         
                         <div class="row g-2 align-items-center">
-                            <div class="col-5">
-                                <label class="form-label mb-1"><small>🍬 ស្ករ</small></label>
+                            <!-- ជ្រើសរើសស្ករ -->
+                            <div class="col-6">
+                                <label class="form-label mb-1"><small class="text-muted">🍬 ស្ករ</small></label>
                                 <select name="sugar" class="form-select form-select-sm rounded-3">
-                                    <option value="100%">100% (ធម្មតា)</option>
+                                    <option value="100%">100%</option>
                                     <option value="75%">75%</option>
                                     <option value="50%">50%</option>
                                     <option value="25%">25%</option>
                                     <option value="0%">0% (ឥតស្ករ)</option>
                                 </select>
                             </div>
-                            <div class="col-3">
-                                <label class="form-label mb-1"><small>ចំនួន</small></label>
-                                <input type="number" name="qty" value="1" min="1" class="form-control form-control-sm text-center rounded-3">
+
+                            <!-- ជ្រើសរើសចំនួន -->
+                            <div class="col-6">
+                                <label class="form-label mb-1"><small class="text-muted">ចំនួន</small></label>
+                                <input type="number" name="qty" value="1" min="1" class="form-control form-control-sm text-center rounded-3 fw-bold">
                             </div>
-                            <div class="col-4 align-self-end">
-                                <button type="submit" class="btn btn-success btn-sm w-100 rounded-3 fw-bold">កុម្ម៉ង់</button>
+
+                            <!-- ប្រអប់ចំណាំសំណូមពរពិសេស (Special Note) -->
+                            <div class="col-12 mt-2">
+                                <input type="text" name="note" class="form-control form-control-sm rounded-3" placeholder="✍️ ចំណាំ (ឧ. ទឹកកកតិច, ដាក់ថង់...)">
+                            </div>
+
+                            <!-- ប៊ូតុងកុម្ម៉ង់ -->
+                            <div class="col-12 mt-2">
+                                <button type="submit" class="btn btn-success btn-sm w-100 rounded-3 fw-bold shadow-sm">
+                                    🛒 ចុចកុម្ម៉ង់
+                                </button>
                             </div>
                         </div>
                     </form>
