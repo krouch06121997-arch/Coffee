@@ -139,6 +139,18 @@
                 badge.innerHTML = "✅ អតិថិជនបានទទួល";
             }
         });
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    const shopId = "<%= shopId %>";
+    socket.emit('join_shop', shopId);
+
+    // ពេលម្ចាស់ហាងកែសម្រួល Menu វានឹង Refresh អេក្រង់អតិថិជនស្វ័យប្រវត្តិ
+    socket.on('menu_updated', () => {
+        window.location.reload();
+    });
+</script>
+
     </script>
 </body>
 </html>
