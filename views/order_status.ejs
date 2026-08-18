@@ -56,7 +56,7 @@
 
         socket.emit('join_order', orderId);
 
-        // ទទួលដំណឹងពីម្ចាស់ហាង ពេលស្ថានភាពកែប្រែ
+        // ទទួលដំណឹងពីម្ចាស់ហាង ពេលស្ថានភាពកែប្រែ (Ready / Completed)
         socket.on('status_change', (data) => {
             if(data.status === 'ready') {
                 document.getElementById('status-box').innerHTML = `
@@ -92,4 +92,3 @@
     </script>
 </body>
 </html>
-
