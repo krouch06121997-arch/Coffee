@@ -4,45 +4,192 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanten:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
+    
+    <style>
+        :root {
+            --ios-bg: #120C08;
+            --ios-card-bg: rgba(255, 255, 255, 0.92);
+            --coffee-dark: #2D1A0E;
+            --coffee-gradient: linear-gradient(135deg, #3D2314 0%, #1F1008 100%);
+            --gold-gradient: linear-gradient(135deg, #D4A373 0%, #B9834E 100%);
+            --ios-green: #34C759;
+            --ios-red: #FF3B30;
+            --ios-blue: #007AFF;
+            --ios-input-bg: #F2F2F7;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Kanten', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--ios-bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(212, 163, 115, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(45, 26, 14, 0.5) 0px, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #1c1c1e;
+        }
+
+        .admin-card {
+            background: var(--ios-card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .revenue-badge {
+            background: var(--gold-gradient);
+            color: #FFFFFF;
+            border-radius: 16px;
+            padding: 10px 20px;
+            box-shadow: 0 4px 15px rgba(212, 163, 115, 0.4);
+            font-weight: 700;
+        }
+
+        .ios-input {
+            background-color: var(--ios-input-bg) !important;
+            border: 1px solid transparent !important;
+            border-radius: 12px !important;
+            padding: 10px 14px;
+        }
+
+        .ios-input:focus {
+            background-color: #FFFFFF !important;
+            border-color: #D4A373 !important;
+            box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.2) !important;
+        }
+
+        /* Interactive Buttons */
+        .btn-ios-primary {
+            background: linear-gradient(135deg, #34C759 0%, #28A745 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
+        }
+
+        .btn-ios-primary:active {
+            transform: scale(0.96);
+        }
+
+        .btn-ios-action {
+            background: linear-gradient(135deg, #007AFF 0%, #0056B3 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 6px 14px;
+            transition: all 0.15s ease;
+        }
+
+        .btn-ios-action:active {
+            transform: scale(0.95);
+        }
+
+        .btn-ios-delete {
+            background: rgba(255, 59, 48, 0.12);
+            color: var(--ios-red);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 5px 12px;
+            transition: all 0.15s ease;
+        }
+
+        .btn-ios-delete:hover {
+            background: var(--ios-red);
+            color: white;
+        }
+
+        .btn-ios-delete:active {
+            transform: scale(0.92);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: #FEF3C7;
+            color: #92400E;
+            animation: pulseGlow 1.8s infinite;
+        }
+
+        .status-ready {
+            background: #E0F2FE;
+            color: #075985;
+        }
+
+        .status-done {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        @keyframes pulseGlow {
+            0% { opacity: 1; }
+            50% { opacity: 0.65; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body>
     <div class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>👨‍💼 ហាងបាយឈ្មោះច្រើន (<%= shopId %>)</h2>
-            <span class="badge bg-warning text-dark fs-5">ចំណូលថ្ងៃនេះ៖ $<%= grandTotal.toFixed(2) %></span>
+        <!-- Dashboard Top Bar -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h2 class="fw-bold text-white mb-0">👨‍💼 ហាងបាយឈ្មោះច្រើន (<%= shopId %>)</h2>
+            <div class="revenue-badge fs-5">
+                💰 ចំណូលថ្ងៃនេះ៖ $<%= grandTotal.toFixed(2) %>
+            </div>
         </div>
 
         <div class="row g-4">
             <!-- ផ្នែកទី១៖ គ្រប់គ្រង Menu (បន្ថែម និងលុប) -->
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
-                    <h4 class="mb-3">➕ បន្ថែម Menu ថ្មី</h4>
+                <div class="admin-card p-4 mb-4">
+                    <h5 class="fw-bold mb-3 text-dark">➕ បន្ថែម Menu ថ្មី</h5>
                     <form action="/<%= shopId %>/admin/menu/add" method="POST">
-                        <div class="mb-2">
-                            <label class="form-label small">ឈ្មោះភេសជ្ជៈ</label>
-                            <input type="text" name="name" class="form-control rounded-3" required placeholder="ឧ. ឡាតេ (Latte)">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-secondary">ឈ្មោះភេសជ្ជៈ</label>
+                            <input type="text" name="name" class="form-control ios-input" required placeholder="ឧ. ឡាតេ (Latte)">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small">តម្លៃ ($)</label>
-                            <input type="number" step="0.01" name="price" class="form-control rounded-3" required placeholder="2.50">
+                            <label class="form-label small fw-semibold text-secondary">តម្លៃ ($)</label>
+                            <input type="number" step="0.01" name="price" class="form-control ios-input" required placeholder="2.50">
                         </div>
-                        <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold">រក្សាទុក Menu</button>
+                        <button type="submit" class="btn btn-ios-primary w-100 py-2">រក្សាទុក Menu</button>
                     </form>
                 </div>
 
-                <div class="card border-0 shadow-sm rounded-4 p-3">
-                    <h4 class="mb-3">📋 បញ្ជី Menu ដែលមាន</h4>
-                    <ul class="list-group list-group-flush">
+                <div class="admin-card p-4">
+                    <h5 class="fw-bold mb-3 text-dark">📋 បញ្ជី Menu ដែលមាន</h5>
+                    <ul class="list-group list-group-flush bg-transparent">
                         <% menuItems.forEach(m => { %>
-                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-0 py-2 border-bottom">
                             <div>
-                                <span class="fw-bold"><%= m.name %></span>
-                                <span class="text-success ms-2">$<%= m.price.toFixed(2) %></span>
+                                <span class="fw-bold text-dark"><%= m.name %></span>
+                                <span class="text-success fw-bold ms-2">$<%= m.price.toFixed(2) %></span>
                             </div>
                             <form action="/<%= shopId %>/admin/menu/delete/<%= m.id %>" method="POST" class="m-0">
-                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-3" onclick="return confirm('តើអ្នកពិតជាចង់លុបមែនទេ?')">លុប</button>
+                                <button type="submit" class="btn btn-ios-delete" onclick="return confirm('តើអ្នកពិតជាចង់លុបមែនទេ?')">លុប</button>
                             </form>
                         </li>
                         <% }); %>
@@ -52,12 +199,12 @@
 
             <!-- ផ្នែកទី២៖ បញ្ជីកុម្ម៉ង់ Real-time -->
             <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4 p-3">
-                    <h4 class="mb-3">📊 បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ (Real-time)</h4>
+                <div class="admin-card p-4">
+                    <h5 class="fw-bold mb-3 text-dark">📊 បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ (Real-time)</h5>
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
+                        <table class="table table-borderless align-middle">
+                            <thead>
+                                <tr class="text-secondary border-bottom">
                                     <th>តុ</th>
                                     <th>ទំនិញ</th>
                                     <th>ចំនួន</th>
@@ -68,19 +215,19 @@
                             </thead>
                             <tbody id="sales-list">
                                 <% salesItems.forEach(s => { %>
-                                <tr id="order-row-<%= s.id %>">
-                                    <td><span class="badge bg-secondary">តុ <%= s.table_num %></span></td>
-                                    <td class="fw-bold"><%= s.item_name %></td>
-                                    <td><%= s.quantity %> (ស្ករ <%= s.sugar %>)</td>
-                                    <td class="text-muted"><small><%= s.note %></small></td>
+                                <tr id="order-row-<%= s.id %>" class="border-bottom">
+                                    <td><span class="badge bg-dark rounded-3 px-2 py-1">តុ <%= s.table_num %></span></td>
+                                    <td class="fw-bold text-dark"><%= s.item_name %></td>
+                                    <td class="fw-medium"><%= s.quantity %> <small class="text-secondary">(ស្ករ <%= s.sugar %>)</small></td>
+                                    <td class="text-muted"><small><%= s.note || '-' %></small></td>
                                     
                                     <td>
                                         <% if(s.status === 'pending') { %>
-                                            <span class="badge bg-warning text-dark" id="status-badge-<%= s.id %>">⏳ កំពុងឆុង</span>
+                                            <span class="status-badge status-pending" id="status-badge-<%= s.id %>">⏳ កំពុងឆុង</span>
                                         <% } else if(s.status === 'ready') { %>
-                                            <span class="badge bg-info text-dark" id="status-badge-<%= s.id %>">☕ ឆុងរួចរាល់</span>
+                                            <span class="status-badge status-ready" id="status-badge-<%= s.id %>">☕ ឆុងរួចរាល់</span>
                                         <% } else { %>
-                                            <span class="badge bg-success" id="status-badge-<%= s.id %>">✅ អតិថិជនបានទទួល</span>
+                                            <span class="status-badge status-done" id="status-badge-<%= s.id %>">✅ បានទទួល</span>
                                         <% } %>
                                     </td>
 
@@ -89,7 +236,7 @@
                                             <form action="/<%= shopId %>/admin/order-status" method="POST" class="d-inline">
                                                 <input type="hidden" name="order_id" value="<%= s.id %>">
                                                 <input type="hidden" name="status" value="ready">
-                                                <button type="submit" class="btn btn-sm btn-primary rounded-3">ឆុងរួចរាល់</button>
+                                                <button type="submit" class="btn btn-ios-action">ឆុងរួចរាល់</button>
                                             </form>
                                         <% } else { %>
                                             <span class="text-muted small">-</span>
