@@ -236,6 +236,10 @@ const PORT = process.env.PORT || 8000;
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`☕ Coffee POS Server កំពុងដំណើរការលើ Port ${PORT}`);
     });
+
 const cors = require('cors');
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    credentials: true
+}));
 
