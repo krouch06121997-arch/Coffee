@@ -199,4 +199,41 @@ const PORT = process.env.PORT || 8000;
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`☕ Coffee POS Server កំពុងដំណើរការលើ Port ${PORT}`);
     });
-    
+
+// បន្ថែម Wrapper នេះដើម្បីឱ្យកូដចាស់ (db.all, db.run) ដើរជាមួយ sql.js បាន
+db.all = function(sql, params = [], callback) {
+    if (typeof params === 'function') {
+        callback = params;
+        params = [];
+    }
+    try {
+        const stmt = db.prepare(sql);
+        if (params.length) stmt.bind(params);
+        const result = [];
+        while (stmt.step()) {
+            result.push(stmt.getAsObject());
+        }
+        stmt.free();
+        if (callback) callback(null, result);
+        return result;
+    } catch (err) {
+        if (callback) callback(err);
+    }
+};
+
+// អនុញ្ញាតឱ្យ db.run ដើរជាមួយ callback ចាស់ដែរ
+const originalRun = db.run.bind(db);
+db.run = function(sql, params = [], callback) {
+    if (typeof params === 'function') {
+        callback = params;
+        params = [];
+    }
+    try {
+        originalRun(sql, params);
+        saveDb(); // Auto-save ចូល file coffee_shop.db ពេលមានការ Insert/Update
+        if (callback) callback(null);
+    } catch (err) {
+        if (callback) callback(err);
+    }
+};
+
