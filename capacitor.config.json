@@ -1,9 +1,11 @@
+
 {
-  "appId": "com.coffeepos.app",
+  "appId": "com.coffee.pos",
   "appName": "Coffee POS",
   "webDir": "public",
   "server": {
-    "url": "http://localhost:8000/admin",
-    "cleartext": true
+    "url": "http://localhost:8000",
+    "cleartext": true,
+    "androidScheme": "http"
   }
 }
