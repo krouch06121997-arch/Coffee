@@ -399,7 +399,7 @@
             </div>
         </div>
 
-        <!-- SECTION 3: ទាញយក QR Code តុ (Master QR Code តែមួយ) -->
+        <!-- SECTION 3: ទាញយក QR Code តុ -->
         <div id="qrSection" class="tab-content-section">
             <div class="admin-card p-4 text-center">
                 <h5 class="fw-bold mb-2 text-dark">📱 QR Code សម្រាប់ហាង (Scan ចូលគ្រប់តុ)</h5>
@@ -478,13 +478,25 @@
             switchSection(savedTab);
         });
 
-        const socket = io();
+        // បានកែសម្រួល Socket ឱ្យមាន Auto-Reconnect យ៉ាងរឹងមាំសម្រាប់ Admin
+        const socket = io({
+            reconnection: true,
+            reconnectionAttempts: Infinity,
+            reconnectionDelay: 1000,
+            timeout: 20000
+        });
+
         const shopId = "<%= shopId %>";
         socket.emit('join_shop', shopId);
 
         socket.on('new_order', () => { window.location.reload(); });
         socket.on('customer_confirmed', () => { window.location.reload(); });
         socket.on('menu_updated', () => { window.location.reload(); });
+
+        // បង្ខំឱ្យ Reload ទំព័រដើម្បីទាញយកទិន្នន័យចុងក្រោយពេលតភ្ជាប់បានវិញ
+        socket.on('reconnect', () => {
+            window.location.reload();
+        });
     </script>
 </body>
 </html>
