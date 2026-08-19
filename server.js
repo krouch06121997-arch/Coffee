@@ -4,23 +4,41 @@ const { Server } = require('socket.io');
 const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
-const multer = require('multer'); // ថែម multer
+const multer = require('multer');
+const QRCode = require('qrcode');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-// រៀបចំ Folder សម្រាប់រក្សារូបភាព Upload
+// រៀបចំ Folder សម្រាប់រក្សារូបភាព Upload និង QR Codes
 const uploadDir = path.join(__dirname, 'public/uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+const qrDir = path.join(__dirname, 'public/qrcodes');
+
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+if (!fs.existsSync(qrDir)) fs.mkdirSync(qrDir, { recursive: true });
+
+// បង្កើត QR Code ១០ តុស្វ័យប្រវត្តិ (Hotspot IP: 192.168.43.1)
+async function generateTableQRCodes(shopId) {
+    const baseUrl = 'http://192.168.43.1:8000';
+    for (let i = 1; i <= 10; i++) {
+        const qrPath = path.join(qrDir, `table-${i}.png`);
+        const targetUrl = `${baseUrl}/${shopId}?table=${i}`;
+        try {
+            await QRCode.toFile(qrPath, targetUrl, {
+                width: 400,
+                margin: 2,
+                color: { dark: '#120C08', light: '#FFFFFF' }
+            });
+        } catch (err) {
+            console.error(`Error generating QR for table ${i}:`, err);
+        }
+    }
 }
 
 // ការរៀបចំ Multer Storage
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
+    destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, uniqueSuffix + path.extname(file.originalname));
@@ -104,8 +122,11 @@ io.on('connection', (socket) => {
 
 // ---------------- ROUTES ----------------
 
-app.get('/:shopId/admin', requireAdminApp, (req, res) => {
+app.get('/:shopId/admin', requireAdminApp, async (req, res) => {
     const { shopId } = req.params;
+
+    // បង្កើត QR Code ១០ តុ
+    await generateTableQRCodes(shopId);
 
     const menuStmt = db.prepare("SELECT * FROM menu WHERE shop_id = ?");
     menuStmt.bind([shopId]);
@@ -130,12 +151,10 @@ app.get('/:shopId/admin', requireAdminApp, (req, res) => {
     res.render('admin', { shopId, menuItems, salesItems, grandTotal });
 });
 
-// ២. បន្ថែម Menu ដោយ Upload រូបភាព ( upload.single('image') )
 app.post('/:shopId/admin/menu/add', requireAdminApp, upload.single('image'), (req, res) => {
     const { shopId } = req.params;
     const { name, price } = req.body;
     
-    // បើមាន File Upload យក Path រូបភាព តែបើគ្មានទេទុកទទេ
     let image_url = '';
     if (req.file) {
         image_url = '/uploads/' + req.file.filename;
@@ -154,7 +173,6 @@ app.post('/:shopId/admin/menu/add', requireAdminApp, upload.single('image'), (re
 app.post('/:shopId/admin/menu/delete/:id', requireAdminApp, (req, res) => {
     const { shopId, id } = req.params;
     
-    // លុបរូបភាពចេញពី Folder ពេលលុប Menu (Optional Clean Up)
     const stmt = db.prepare("SELECT image_url FROM menu WHERE id = ? AND shop_id = ?");
     stmt.bind([id, shopId]);
     if (stmt.step()) {
@@ -184,6 +202,7 @@ app.post('/:shopId/admin/order-status', requireAdminApp, (req, res) => {
     res.redirect(`/${shopId}/admin`);
 });
 
+// Customer View Route (បង្ហាញ menu.ejs ពេល Scan QR Code)
 app.get('/:shopId', (req, res) => {
     const { shopId } = req.params;
     const tableNum = req.query.table || '1';
