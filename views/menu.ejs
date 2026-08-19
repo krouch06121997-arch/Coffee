@@ -75,5 +75,19 @@
             <% }); %>
         </div>
     </div>
+
+    <!-- Socket.io សម្រាប់ Auto Refresh ពេល Admin អាប់ដេត Menu -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const shopId = "<%= shopId %>";
+
+        socket.emit('join_shop', shopId);
+
+        // ពេល Admin បន្ថែម/លុប Menu អេក្រង់ភ្ញៀវនឹងអាប់ដេតភ្លាមៗ
+        socket.on('menu_updated', () => {
+            window.location.reload();
+        });
+    </script>
 </body>
 </html>
