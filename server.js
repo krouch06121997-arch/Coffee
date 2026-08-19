@@ -1,11 +1,56 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
 const http = require('http');
 const { Server } = require('socket.io');
-
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server);const initSqlJs = require('sql.js');
+const fs = require('fs');
+
+let db;
+
+// មុខងារ save ដិនន័យចូលឯកសារ coffee_shop.db
+function saveDb() {
+    if (db) {
+            const data = db.export();
+                    const buffer = Buffer.from(data);
+                            fs.writeFileSync('./coffee_shop.db', buffer);
+                                }
+                                }
+
+                                // ចាប់ផ្តើម Database
+                                initSqlJs().then(SQL => {
+                                    if (fs.existsSync('./coffee_shop.db')) {
+                                            const filebuffer = fs.readFileSync('./coffee_shop.db');
+                                                    db = new SQL.Database(filebuffer);
+                                                        } else {
+                                                                db = new SQL.Database();
+                                                                    }
+
+                                                                        // បង្កើត Table ប្រសិនបើមិនទាន់មាន
+                                                                            db.run(`CREATE TABLE IF NOT EXISTS menu (
+                                                                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                                                            shop_id TEXT NOT NULL DEFAULT 'shop1',
+                                                                                                    name TEXT NOT NULL,
+                                                                                                            price REAL NOT NULL
+                                                                                                                )`);
+
+                                                                                                                    db.run(`CREATE TABLE IF NOT EXISTS sales (
+                                                                                                                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                                                                                                    shop_id TEXT NOT NULL DEFAULT 'shop1',
+                                                                                                                                            table_num INTEGER,
+                                                                                                                                                    item_name TEXT,
+                                                                                                                                                            quantity INTEGER,
+                                                                                                                                                                    sugar TEXT,
+                                                                                                                                                                            note TEXT,
+                                                                                                                                                                                    total REAL,
+                                                                                                                                                                                            status TEXT DEFAULT 'pending',
+                                                                                                                                                                                                    created_at DATE DEFAULT CURRENT_TIMESTAMP
+                                                                                                                                                                                                        )`);
+
+                                                                                                                                                                                                            saveDb();
+                                                                                                                                                                                                                console.log("☕ Database initialized successfully with sql.js!");
+                                                                                                                                                                                                                });
+                                                                                                                                                                                                                
 
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
