@@ -10,7 +10,6 @@ const QRCode = require('qrcode');
 const app = express();
 const server = http.createServer(app);
 
-// បន្ថែម Keep-Alive configuration ដើម្បីកុំឱ្យដាច់ការតភ្ជាប់ (Socket.io)
 const io = new Server(server, { 
     cors: { origin: "*" },
     pingTimeout: 60000,
@@ -94,6 +93,17 @@ async function initDB() {
                 note TEXT,
                 status TEXT DEFAULT 'pending'
             );
+            CREATE TABLE IF NOT EXISTS sales_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                shop_id TEXT,
+                shift_date TEXT,
+                table_num TEXT,
+                item_name TEXT,
+                quantity INTEGER,
+                sugar TEXT,
+                note TEXT,
+                total_price REAL
+            );
         `);
 
         try {
@@ -147,7 +157,51 @@ app.get('/:shopId/admin', requireAdminApp, async (req, res) => {
     }
     salesStmt.free();
 
-    res.render('admin', { shopId, menuItems, salesItems, grandTotal });
+    // ទាញយកប្រវត្តិលក់ (Sales History) មកបង្ហាញ
+    const historyStmt = db.prepare("SELECT * FROM sales_history WHERE shop_id = ? ORDER BY id DESC");
+    historyStmt.bind([shopId]);
+    const historyItems = [];
+    while (historyStmt.step()) historyItems.push(historyStmt.getAsObject());
+    historyStmt.free();
+
+    res.render('admin', { shopId, menuItems, salesItems, grandTotal, historyItems });
+});
+
+// បន្ថែម Route សម្រាប់បិទវេន (Close Shift / Reset)
+app.post('/:shopId/admin/close-shift', requireAdminApp, (req, res) => {
+    const { shopId } = req.params;
+    const shiftDate = new Date().toLocaleDateString();
+
+    // ១. ទាញយកទិន្នន័យពី sales មកသိမ်းចូល sales_history
+    const salesStmt = db.prepare("SELECT * FROM sales WHERE shop_id = ?");
+    salesStmt.bind([shopId]);
+    const currentSales = [];
+    while (salesStmt.step()) currentSales.push(salesStmt.getAsObject());
+    salesStmt.free();
+
+    const menuStmt = db.prepare("SELECT * FROM menu WHERE shop_id = ?");
+    menuStmt.bind([shopId]);
+    const menuItems = [];
+    while (menuStmt.step()) menuItems.push(menuStmt.getAsObject());
+    menuStmt.free();
+
+    currentSales.forEach(s => {
+        const item = menuItems.find(m => m.name === s.item_name);
+        const itemPrice = item ? item.price : 0;
+        const totalPrice = itemPrice * s.quantity;
+
+        db.run(
+            "INSERT INTO sales_history (shop_id, shift_date, table_num, item_name, quantity, sugar, note, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            [shopId, shiftDate, s.table_num, s.item_name, s.quantity, s.sugar, s.note, totalPrice]
+        );
+    });
+
+    // ២. លុបទិន្នន័យចាស់ចេញពី table sales ដើម្បីឱ្យថ្ងៃថ្មីចាប់ផ្តើមពីសូន្យ
+    db.run("DELETE FROM sales WHERE shop_id = ?", [shopId]);
+    saveDB();
+
+    io.to(shopId).emit('menu_updated');
+    res.redirect(`/${shopId}/admin`);
 });
 
 app.post('/:shopId/admin/menu/add', requireAdminApp, upload.single('image'), (req, res) => {
