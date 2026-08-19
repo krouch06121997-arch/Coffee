@@ -26,13 +26,22 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Build
-        run: |
-          # ជំហាននេះសម្រាប់ Build ឯកសារ (ឧទាហរណ៍ប្រើ npm build ប្រសិនបើមាន)
-          # អ្នកអាចបន្ថែម command ផ្សេងៗនៅទីនេះ
-          echo "Building project..."
-          
-      - name: Sync Android Platform
+      # ជំហានទី ១: ធ្វើការ Sync កូដ Config ថ្មីចូល Android
+      - name: Sync Capacitor
         run: |
           npx cap copy android
           npx cap sync android
+
+      # ជំហានទី ២: ធ្វើការ Build APK ជាក់ស្តែង
+      - name: Build Android APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      # ជំហានទី ៣: ទុក File APK ឱ្យយើងទាញយក
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
