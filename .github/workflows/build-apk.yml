@@ -33,9 +33,8 @@ jobs:
         run: |
           npx cap init "Coffee POS" "com.coffeepos.app" --web-dir public
 
-      - name: Add Android Platform
-        run: |
-          npx cap add android
+      - name: Sync Android Platform
+        run: npx cap sync android
 
       - name: Build Android APK
         env:
