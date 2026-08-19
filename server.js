@@ -243,25 +243,8 @@ app.use(cors({
     credentials: true
 }));
 
-// ១. បង្ហាញទំព័រ Admin (HTML Form)
-app.get('/:shopId/admin', (req, res) => {
-    res.send(`
-        <h2>គ្រប់គ្រង Menu</h2>
-        <form action="/${req.params.shopId}/admin" method="POST">
-            <input type="text" name="item_name" placeholder="ឈ្មោះកាហ្វេ" required><br>
-            <input type="number" name="price" placeholder="តម្លៃ" step="0.01" required><br>
-            <button type="submit">បន្ថែមចូល Menu</button>
-        </form>
-    `);
+// Route សម្រាប់ចូល Admin Panel
+app.get('/admin', (req, res) => {
+    // ហៅទៅកាន់ file views/admin.ejs
+    res.render('admin');
 });
-
-// ២. ទទួលទិន្នន័យពី Form មក Save ចូល Database
-app.post('/:shopId/admin', (req, res) => {
-    const { item_name, price } = req.body;
-    db.run("INSERT INTO menu (shop_id, item_name, price) VALUES (?, ?, ?)", 
-    [req.params.shopId, item_name, price], (err) => {
-        if (err) res.send("Error!");
-        else res.send("បានបន្ថែមជោគជ័យ! <a href='/${req.params.shopId}/admin'>ត្រលប់ក្រោយ</a>");
-    });
-});
-
