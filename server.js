@@ -136,11 +136,17 @@ app.get('/:shopId', (req, res) => {
 
     const menuStmt = db.prepare("SELECT * FROM menu WHERE shop_id = ?");
     menuStmt.bind([shopId]);
-    const menuItems = [];
-    while (menuStmt.step()) menuItems.push(menuStmt.getAsObject());
+    const itemsList = [];
+    while (menuStmt.step()) itemsList.push(menuStmt.getAsObject());
     menuStmt.free();
 
-    res.render('menu', { shopId, tableNum, menuItems });
+    // ផ្ញើទាំង items និង menuItems ដើម្បីឆ្លើយតបត្រូវតាមកូដក្នុង menu.ejs
+    res.render('menu', { 
+        shopId, 
+        tableNum, 
+        items: itemsList, 
+        menuItems: itemsList 
+    });
 });
 
 // ៦. Customer ចុច Order (ការពារតម្លៃ undefined និងបាញ់ Socket ទៅ Admin)
@@ -173,4 +179,3 @@ initDB().then(() => {
         console.log(`☕ Coffee POS Server Running on Port ${PORT}`);
     });
 });
-
