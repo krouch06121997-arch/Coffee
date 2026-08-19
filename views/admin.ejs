@@ -32,7 +32,6 @@
             padding-bottom: 30px;
         }
 
-        /* Top Bar & Hamburger Menu */
         .admin-navbar {
             background: rgba(30, 20, 15, 0.85);
             backdrop-filter: blur(15px);
@@ -61,10 +60,8 @@
 
         .menu-toggle-btn:active {
             transform: scale(0.92);
-            background: rgba(255, 255, 255, 0.25);
         }
 
-        /* Slide Drawer Overlay */
         .drawer-overlay {
             position: fixed;
             top: 0;
@@ -84,7 +81,6 @@
             visibility: visible;
         }
 
-        /* Slide Drawer Sidebar Box */
         .drawer-content {
             position: fixed;
             top: 0;
@@ -143,7 +139,6 @@
             color: #FFE8D6;
         }
 
-        /* Single Combined Card */
         .admin-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
@@ -180,10 +175,6 @@
             padding: 11px;
             box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
             transition: all 0.15s ease;
-        }
-
-        .btn-ios-primary:active {
-            transform: scale(0.97);
         }
 
         .btn-ios-action {
@@ -231,6 +222,21 @@
             display: block;
         }
 
+        .qr-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #E5E7EB;
+        }
+
+        .qr-card img {
+            width: 100%;
+            max-width: 180px;
+            border-radius: 8px;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
@@ -239,7 +245,6 @@
 </head>
 <body>
 
-    <!-- 1. Top Navbar -->
     <div class="admin-navbar d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-3">
             <button class="menu-toggle-btn" id="openDrawerBtn">☰</button>
@@ -250,11 +255,9 @@
         </div>
     </div>
 
-    <!-- 2. Slide Drawer Overlay & Content -->
     <div class="drawer-overlay" id="drawerOverlay"></div>
     
     <div class="drawer-content" id="drawerContent">
-        <!-- Shop Profile -->
         <div class="shop-profile-box">
             <div class="profile-avatar">☕</div>
             <h5 class="fw-bold text-white mb-1">ហាងបាយឈ្មោះច្រើន</h5>
@@ -264,7 +267,6 @@
             </div>
         </div>
 
-        <!-- Navigation Links inside Drawer -->
         <div class="py-3 flex-grow-1">
             <div class="drawer-nav-item active" id="navOrdersBtn" onclick="switchSection('orders')">
                 <span>📊</span>
@@ -274,6 +276,10 @@
                 <span>☕</span>
                 <span>គ្រប់គ្រង Menu ហាង</span>
             </div>
+            <div class="drawer-nav-item" id="navQrBtn" onclick="switchSection('qr')">
+                <span>📱</span>
+                <span>ទាញយក QR Code តុ</span>
+            </div>
         </div>
 
         <div class="p-3 border-top border-secondary border-opacity-25">
@@ -281,10 +287,9 @@
         </div>
     </div>
 
-    <!-- Main Content Container -->
     <div class="container py-3">
 
-        <!-- SECTION 1: បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ (Default Main Screen) -->
+        <!-- SECTION 1: បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ -->
         <div id="ordersSection" class="tab-content-section active">
             <div class="admin-card p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -345,11 +350,9 @@
             </div>
         </div>
 
-        <!-- SECTION 2: គ្រប់គ្រង Menu ( នៅក្នុង Single Combined Card ) -->
+        <!-- SECTION 2: គ្រប់គ្រង Menu -->
         <div id="menuSection" class="tab-content-section">
             <div class="admin-card p-4">
-                
-                <!-- ផ្នែកបន្ថែម Menu ថ្មី -->
                 <h5 class="fw-bold mb-3 text-dark">➕ បន្ថែម Menu ថ្មី</h5>
                 <form action="/<%= shopId %>/admin/menu/add" method="POST" enctype="multipart/form-data" class="mb-4 pb-4 border-bottom" onsubmit="saveTabState('menu')">
                     <div class="mb-2">
@@ -367,7 +370,6 @@
                     <button type="submit" class="btn btn-ios-primary w-100">រក្សាទុក Menu</button>
                 </form>
 
-                <!-- ផ្នែកបញ្ជី Menu ដែលមានស្រាប់ -->
                 <h5 class="fw-bold mb-3 text-dark">📋 បញ្ជី Menu ដែលមាន</h5>
                 <ul class="list-group list-group-flush bg-transparent">
                     <% if (menuItems.length === 0) { %>
@@ -392,7 +394,26 @@
                     </li>
                     <% }); %>
                 </ul>
+            </div>
+        </div>
 
+        <!-- SECTION 3: ទាញយក QR Code តុ -->
+        <div id="qrSection" class="tab-content-section">
+            <div class="admin-card p-4">
+                <h5 class="fw-bold mb-2 text-dark">📱 QR Code សម្រាប់តុទាំង ១០</h5>
+                <p class="text-muted small mb-4">អ្នកអាចទាញយក (Download) រូបភាព QR Code ទាំងនេះទៅ Print បិទលើតុក្នុងហាងបាន៖</p>
+                
+                <div class="row g-3">
+                    <% for(let i = 1; i <= 10; i++) { %>
+                        <div class="col-6 col-md-4 col-lg-3">
+                            <div class="qr-card">
+                                <h6 class="fw-bold text-dark mb-2">តុទី <%= i %></h6>
+                                <img src="/qrcodes/table-<%= i %>.png" alt="QR Table <%= i %>" class="img-fluid mb-2">
+                                <a href="/qrcodes/table-<%= i %>.png" download="Table-<%= i %>-QR.png" class="btn btn-sm btn-outline-dark w-100 rounded-3">📥 Download</a>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
             </div>
         </div>
 
@@ -426,32 +447,41 @@
 
             const ordersSec = document.getElementById('ordersSection');
             const menuSec = document.getElementById('menuSection');
+            const qrSec = document.getElementById('qrSection');
+            
             const navOrdersBtn = document.getElementById('navOrdersBtn');
             const navMenuBtn = document.getElementById('navMenuBtn');
+            const navQrBtn = document.getElementById('navQrBtn');
             const headerTitle = document.getElementById('headerTitle');
+
+            ordersSec.classList.remove('active');
+            menuSec.classList.remove('active');
+            qrSec.classList.remove('active');
+
+            navOrdersBtn.classList.remove('active');
+            navMenuBtn.classList.remove('active');
+            navQrBtn.classList.remove('active');
 
             if (section === 'orders') {
                 ordersSec.classList.add('active');
-                menuSec.classList.remove('active');
                 navOrdersBtn.classList.add('active');
-                navMenuBtn.classList.remove('active');
                 headerTitle.innerText = "📊 បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ";
             } else if (section === 'menu') {
                 menuSec.classList.add('active');
-                ordersSec.classList.remove('active');
                 navMenuBtn.classList.add('active');
-                navOrdersBtn.classList.remove('active');
                 headerTitle.innerText = "☕ គ្រប់គ្រង Menu ហាង";
+            } else if (section === 'qr') {
+                qrSec.classList.add('active');
+                navQrBtn.classList.add('active');
+                headerTitle.innerText = "📱 QR Code សម្រាប់តុ";
             }
         }
 
-        // Restore Tab State on Page Load
         document.addEventListener("DOMContentLoaded", () => {
             const savedTab = localStorage.getItem('activeAdminTab') || 'orders';
             switchSection(savedTab);
         });
 
-        // Socket.io Real-time Event Handling
         const socket = io();
         const shopId = "<%= shopId %>";
         socket.emit('join_shop', shopId);
