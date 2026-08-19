@@ -4,12 +4,29 @@ const { Server } = require('socket.io');
 const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer'); // ថែម multer
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: { origin: "*" }
+const io = new Server(server, { cors: { origin: "*" } });
+
+// រៀបចំ Folder សម្រាប់រក្សារូបភាព Upload
+const uploadDir = path.join(__dirname, 'public/uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// ការរៀបចំ Multer Storage
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
 });
+const upload = multer({ storage: storage });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -18,7 +35,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Middleware ការពារ Admin (អនុញ្ញាតតែ App/Capacitor ប៉ុណ្ណោះ)
 function requireAdminApp(req, res, next) {
     const userAgent = req.headers['user-agent'] || '';
     if (userAgent.includes('Capacitor') || userAgent.includes('wv')) {
@@ -61,12 +77,9 @@ async function initDB() {
             );
         `);
 
-        // អាប់ដេត Table Structure បើគ្មាន column image_url (ការពារកុំឱ្យ Crash)
         try {
             db.run("ALTER TABLE menu ADD COLUMN image_url TEXT");
-        } catch (e) {
-            // មាន Column រួចហើយ
-        }
+        } catch (e) {}
 
         saveDB();
         console.log("✅ Database initialized successfully.");
@@ -83,7 +96,6 @@ function saveDB() {
     }
 }
 
-// Socket.io Connection
 io.on('connection', (socket) => {
     socket.on('join_shop', (shopId) => {
         if (shopId) socket.join(String(shopId));
@@ -92,7 +104,6 @@ io.on('connection', (socket) => {
 
 // ---------------- ROUTES ----------------
 
-// ១. Route សម្រាប់ Admin Dashboard
 app.get('/:shopId/admin', requireAdminApp, (req, res) => {
     const { shopId } = req.params;
 
@@ -119,14 +130,20 @@ app.get('/:shopId/admin', requireAdminApp, (req, res) => {
     res.render('admin', { shopId, menuItems, salesItems, grandTotal });
 });
 
-// ២. បន្ថែម Menu (គាំទ្រ URL រូបភាព + Socket Event 'menu_updated')
-app.post('/:shopId/admin/menu/add', requireAdminApp, (req, res) => {
+// ២. បន្ថែម Menu ដោយ Upload រូបភាព ( upload.single('image') )
+app.post('/:shopId/admin/menu/add', requireAdminApp, upload.single('image'), (req, res) => {
     const { shopId } = req.params;
-    const { name, price, image_url } = req.body;
+    const { name, price } = req.body;
     
+    // បើមាន File Upload យក Path រូបភាព តែបើគ្មានទេទុកទទេ
+    let image_url = '';
+    if (req.file) {
+        image_url = '/uploads/' + req.file.filename;
+    }
+
     db.run(
         "INSERT INTO menu (shop_id, name, price, image_url) VALUES (?, ?, ?, ?)", 
-        [shopId, name || '', parseFloat(price) || 0, image_url || '']
+        [shopId, name || '', parseFloat(price) || 0, image_url]
     );
     saveDB();
 
@@ -134,9 +151,21 @@ app.post('/:shopId/admin/menu/add', requireAdminApp, (req, res) => {
     res.redirect(`/${shopId}/admin`);
 });
 
-// ៣. លុប Menu (ជាមួយនឹង Socket Event 'menu_updated')
 app.post('/:shopId/admin/menu/delete/:id', requireAdminApp, (req, res) => {
     const { shopId, id } = req.params;
+    
+    // លុបរូបភាពចេញពី Folder ពេលលុប Menu (Optional Clean Up)
+    const stmt = db.prepare("SELECT image_url FROM menu WHERE id = ? AND shop_id = ?");
+    stmt.bind([id, shopId]);
+    if (stmt.step()) {
+        const row = stmt.getAsObject();
+        if (row.image_url && row.image_url.startsWith('/uploads/')) {
+            const filePath = path.join(__dirname, 'public', row.image_url);
+            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        }
+    }
+    stmt.free();
+
     db.run("DELETE FROM menu WHERE id = ? AND shop_id = ?", [id, shopId]);
     saveDB();
 
@@ -144,7 +173,6 @@ app.post('/:shopId/admin/menu/delete/:id', requireAdminApp, (req, res) => {
     res.redirect(`/${shopId}/admin`);
 });
 
-// ៤. ផ្លាស់ប្តូរ Status Order (គាំទ្រ pending -> ready -> done)
 app.post('/:shopId/admin/order-status', requireAdminApp, (req, res) => {
     const { shopId } = req.params;
     const { order_id, status } = req.body;
@@ -156,7 +184,6 @@ app.post('/:shopId/admin/order-status', requireAdminApp, (req, res) => {
     res.redirect(`/${shopId}/admin`);
 });
 
-// ៥. ទំព័រ Menu សម្រាប់ Customer ( Render ទៅ menu.ejs)
 app.get('/:shopId', (req, res) => {
     const { shopId } = req.params;
     const tableNum = req.query.table || '1';
@@ -175,7 +202,6 @@ app.get('/:shopId', (req, res) => {
     });
 });
 
-// ៦. Customer ចុច Order
 app.post('/:shopId/order', (req, res) => {
     const { shopId } = req.params;
     const { table, table_num, item_name, qty, quantity, sugar, note } = req.body;
@@ -196,7 +222,6 @@ app.post('/:shopId/order', (req, res) => {
     res.redirect(`/${shopId}?table=${safeTableNum}`);
 });
 
-// បើក Server
 initDB().then(() => {
     const PORT = process.env.PORT || 8000;
     server.listen(PORT, () => {
