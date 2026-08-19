@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>កុម្ម៉ង់កាហ្វេ - តុ <%= tableNum %></title>
+    <title>កុម្ម៉ង់កាហ្វេ - តុ <span id="displayTableNum"><%= tableNum %></span></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -41,7 +41,6 @@
             padding: 16px;
         }
 
-        /* Top Header iOS */
         .ios-header {
             background: linear-gradient(135deg, rgba(61, 35, 20, 0.95) 0%, rgba(20, 12, 7, 0.95) 100%);
             backdrop-filter: blur(20px);
@@ -62,10 +61,10 @@
             font-weight: 700;
             font-size: 0.9rem;
             display: inline-block;
+            cursor: pointer;
             animation: pulseGlow 2s infinite;
         }
 
-        /* Product Card */
         .menu-card {
             background: var(--card-bg);
             backdrop-filter: blur(16px);
@@ -86,7 +85,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.12);
         }
 
-        /* iOS Segmented Control for Sugar */
         .sugar-segmented {
             background: var(--ios-gray);
             border-radius: 12px;
@@ -117,7 +115,6 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.12);
         }
 
-        /* iOS Quantity Counter */
         .qty-btn {
             width: 32px;
             height: 32px;
@@ -161,7 +158,6 @@
             box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.25) !important;
         }
 
-        /* iOS Order Button Active Micro-interaction */
         .btn-ios-submit {
             background: var(--ios-green-grad);
             color: white;
@@ -206,7 +202,7 @@
                 <h4 class="m-0 fw-bold tracking-tight">កុម្ម៉ង់កាហ្វេ</h4>
             </div>
             <div class="mt-2">
-                <span class="table-pill">📍 តុលេខ <%= tableNum %></span>
+                <span class="table-pill" onclick="changeTable()">📍 តុលេខ <span id="currentTableText"><%= tableNum %></span> (ចុចដើម្បីប្តូរ)</span>
             </div>
         </div>
 
@@ -221,7 +217,6 @@
             <% } %>
 
             <% items.forEach((item, idx) => { 
-                // Auto Detect Product Image if URL is empty
                 let imgUrl = item.image_url;
                 if(!imgUrl) {
                     const nameLower = item.name.toLowerCase();
@@ -239,12 +234,11 @@
                 }
             %>
             <div class="menu-card p-3">
-                <form action="/<%= shopId %>/order" method="POST">
-                    <input type="hidden" name="table" value="<%= tableNum %>">
+                <form action="/<%= shopId %>/order" method="POST" onsubmit="attachTableToForm(this)">
+                    <input type="hidden" name="table" id="form_table_<%= idx %>" value="<%= tableNum %>">
                     <input type="hidden" name="item_name" value="<%= item.name %>">
                     <input type="hidden" name="price" value="<%= item.price %>">
 
-                    <!-- Top Info: Image + Title + Price -->
                     <div class="d-flex gap-3 align-items-center mb-3">
                         <img src="<%= imgUrl %>" alt="<%= item.name %>" class="product-img">
                         <div class="flex-grow-1">
@@ -253,28 +247,22 @@
                         </div>
                     </div>
 
-                    <!-- Sugar Selector (iOS Segmented Pills) -->
                     <div class="mb-2">
                         <label class="form-label mb-1 text-secondary"><small class="fw-bold">កម្រិតស្ករ</small></label>
                         <div class="sugar-segmented">
                             <input type="radio" name="sugar" id="s100_<%= idx %>" value="100%" checked>
                             <label for="s100_<%= idx %>">100%</label>
-
                             <input type="radio" name="sugar" id="s75_<%= idx %>" value="75%">
                             <label for="s75_<%= idx %>">75%</label>
-
                             <input type="radio" name="sugar" id="s50_<%= idx %>" value="50%">
                             <label for="s50_<%= idx %>">50%</label>
-
                             <input type="radio" name="sugar" id="s25_<%= idx %>" value="25%">
                             <label for="s25_<%= idx %>">25%</label>
-
                             <input type="radio" name="sugar" id="s0_<%= idx %>" value="0%">
                             <label for="s0_<%= idx %>">0%</label>
                         </div>
                     </div>
 
-                    <!-- Quantity Counter + Special Note -->
                     <div class="row g-2 align-items-center mt-1">
                         <div class="col-6">
                             <div class="d-flex align-items-center bg-light rounded-3 p-1">
@@ -288,7 +276,6 @@
                         </div>
                     </div>
 
-                    <!-- Order Button -->
                     <div class="mt-3">
                         <button type="submit" class="btn btn-ios-submit w-100 d-flex justify-content-center align-items-center gap-2">
                             <span>🛒</span>
@@ -301,9 +288,53 @@
         </div>
     </div>
 
-    <!-- JS Counter & Socket.io -->
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Managing Table Number via LocalStorage so 1 QR Code works for all tables seamlessly
+        document.addEventListener("DOMContentLoaded", () => {
+            const shopId = "<%= shopId %>";
+            const storageKey = `coffee_table_${shopId}`;
+            const urlParams = new URLSearchParams(window.location.search);
+            let table = urlParams.get('table');
+
+            if (table) {
+                localStorage.setItem(storageKey, table);
+            } else {
+                table = localStorage.getItem(storageKey);
+                if (!table) {
+                    table = prompt("📍 សូមបញ្ចូលលេខតុរបស់អ្នក (ឧ. តុលេខ ១):", "1");
+                    if (!table) table = "1";
+                    localStorage.setItem(storageKey, table);
+                }
+            }
+
+            document.getElementById('currentTableText').innerText = table;
+            document.querySelectorAll('input[name="table"]').forEach(input => {
+                input.value = table;
+            });
+        });
+
+        function changeTable() {
+            const shopId = "<%= shopId %>";
+            const storageKey = `coffee_table_${shopId}`;
+            let newTable = prompt("🔄 ប្តូរលេខតុថ្មី:", localStorage.getItem(storageKey) || "1");
+            if (newTable) {
+                localStorage.setItem(storageKey, newTable);
+                document.getElementById('currentTableText').innerText = newTable;
+                document.querySelectorAll('input[name="table"]').forEach(input => {
+                    input.value = newTable;
+                });
+            }
+        }
+
+        function attachTableToForm(form) {
+            const shopId = "<%= shopId %>";
+            const storageKey = `coffee_table_${shopId}`;
+            const currentTable = localStorage.getItem(storageKey) || "1";
+            const tableInput = form.querySelector('input[name="table"]');
+            if (tableInput) tableInput.value = currentTable;
+        }
+
         function incrementQty(idx) {
             const input = document.getElementById('qty_' + idx);
             input.value = parseInt(input.value) + 1;
@@ -326,3 +357,4 @@
     </script>
 </body>
 </html>
+
