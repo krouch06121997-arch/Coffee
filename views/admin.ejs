@@ -2,8 +2,8 @@
 <html lang="km">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Dashboard - <%= shopId %></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,12 +13,13 @@
     <style>
         :root {
             --ios-bg: #120C08;
-            --card-bg: rgba(255, 255, 255, 0.94);
+            --card-bg: rgba(255, 255, 255, 0.95);
             --gold-grad: linear-gradient(135deg, #D4A373 0%, #B9834E 100%);
             --ios-green: #34C759;
             --ios-red: #FF3B30;
             --ios-blue: #007AFF;
             --ios-gray: #F2F2F7;
+            --sidebar-width: 280px;
         }
 
         body {
@@ -28,24 +29,139 @@
             background-attachment: fixed;
             min-height: 100vh;
             color: #1c1c1e;
+            padding-bottom: 30px;
         }
 
+        /* Top Bar & Hamburger Menu */
+        .admin-navbar {
+            background: rgba(30, 20, 15, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            padding: 12px 16px;
+        }
+
+        .menu-toggle-btn {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #FFFFFF;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .menu-toggle-btn:active {
+            transform: scale(0.92);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Slide Drawer Overlay */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Slide Drawer Sidebar Box */
+        .drawer-content {
+            position: fixed;
+            top: 0;
+            left: calc(-1 * var(--sidebar-width));
+            width: var(--sidebar-width);
+            height: 100%;
+            background: #1C120C;
+            border-right: 1px solid rgba(255, 255, 255, 0.12);
+            z-index: 1050;
+            transition: left 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+        }
+
+        .drawer-content.active {
+            left: 0;
+        }
+
+        .shop-profile-box {
+            padding: 24px 20px;
+            background: linear-gradient(180deg, rgba(212, 163, 115, 0.2) 0%, transparent 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
+            background: var(--gold-grad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 6px 16px rgba(212, 163, 115, 0.3);
+            margin-bottom: 12px;
+        }
+
+        .drawer-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 14px;
+            margin: 4px 12px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .drawer-nav-item:hover, .drawer-nav-item.active {
+            background: rgba(212, 163, 115, 0.2);
+            color: #FFE8D6;
+        }
+
+        /* Single Combined Card */
         .admin-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
         }
 
         .revenue-badge {
             background: var(--gold-grad);
             color: #FFFFFF;
-            border-radius: 16px;
-            padding: 10px 18px;
-            box-shadow: 0 4px 15px rgba(212, 163, 115, 0.4);
+            border-radius: 14px;
+            padding: 8px 16px;
+            box-shadow: 0 4px 15px rgba(212, 163, 115, 0.35);
             font-weight: 700;
+            font-size: 0.9rem;
         }
 
         .ios-input {
@@ -61,13 +177,13 @@
             border: none;
             border-radius: 12px;
             font-weight: 700;
-            padding: 10px;
+            padding: 11px;
             box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
             transition: all 0.15s ease;
         }
 
         .btn-ios-primary:active {
-            transform: scale(0.96);
+            transform: scale(0.97);
         }
 
         .btn-ios-action {
@@ -85,7 +201,7 @@
             border: none;
             border-radius: 10px;
             font-weight: 600;
-            padding: 4px 10px;
+            padding: 6px 12px;
         }
 
         .status-badge {
@@ -98,135 +214,251 @@
 
         .status-pending { background: #FEF3C7; color: #92400E; }
         .status-ready { background: #E0F2FE; color: #075985; }
-        .status-done { background: #D1FAE5; color: #065F46; }
 
         .menu-thumb {
-            width: 40px;
-            height: 40px;
+            width: 46px;
+            height: 46px;
             object-fit: cover;
-            border-radius: 10px;
+            border-radius: 12px;
+        }
+
+        .tab-content-section {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .tab-content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <div class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-            <h3 class="fw-bold text-white mb-0">👨‍💼 ហាងបាយឈ្មោះច្រើន (<%= shopId %>)</h3>
-            <div class="revenue-badge">
-                💰 ចំណូលថ្ងៃនេះ៖ $<%= grandTotal.toFixed(2) %>
-            </div>
+
+    <!-- 1. Top Navbar -->
+    <div class="admin-navbar d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <button class="menu-toggle-btn" id="openDrawerBtn">☰</button>
+            <h5 class="fw-bold text-white mb-0" id="headerTitle">📊 បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ</h5>
         </div>
-
-        <div class="row g-4">
-            <!-- ផ្នែកទី១៖ គ្រប់គ្រង Menu -->
-            <div class="col-lg-4">
-                <div class="admin-card p-4 mb-4">
-                    <h5 class="fw-bold mb-3 text-dark">➕ បន្ថែម Menu ថ្មី</h5>
-                    <!-- ថែម enctype="multipart/form-data" សម្រាប់ Upload File -->
-                    <form action="/<%= shopId %>/admin/menu/add" method="POST" enctype="multipart/form-data">
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold text-secondary">ឈ្មោះភេសជ្ជៈ</label>
-                            <input type="text" name="name" class="form-control ios-input" required placeholder="ឧ. ឡាតេ (Latte)">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label small fw-bold text-secondary">តម្លៃ ($)</label>
-                            <input type="number" step="0.01" name="price" class="form-control ios-input" required placeholder="2.50">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-secondary">📷 ជ្រើសរើសរូបភាព (Upload File)</label>
-                            <input type="file" name="image" class="form-control ios-input" accept="image/*">
-                        </div>
-                        <button type="submit" class="btn btn-ios-primary w-100">រក្សាទុក Menu</button>
-                    </form>
-                </div>
-
-                <div class="admin-card p-4">
-                    <h5 class="fw-bold mb-3 text-dark">📋 បញ្ជី Menu ដែលមាន</h5>
-                    <ul class="list-group list-group-flush bg-transparent">
-                        <% menuItems.forEach(m => { %>
-                        <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-0 py-2 border-bottom">
-                            <div class="d-flex align-items-center gap-2">
-                                <% if(m.image_url) { %>
-                                    <img src="<%= m.image_url %>" class="menu-thumb" alt="coffee">
-                                <% } else { %>
-                                    <span class="fs-4">☕</span>
-                                <% } %>
-                                <div>
-                                    <span class="fw-bold text-dark d-block"><%= m.name %></span>
-                                    <span class="text-success fw-bold">$<%= m.price.toFixed(2) %></span>
-                                </div>
-                            </div>
-                            <form action="/<%= shopId %>/admin/menu/delete/<%= m.id %>" method="POST" class="m-0">
-                                <button type="submit" class="btn btn-ios-delete" onclick="return confirm('តើអ្នកពិតជាចង់លុបមែនទេ?')">លុប</button>
-                            </form>
-                        </li>
-                        <% }); %>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- ផ្នែកទី២៖ បញ្ជីកុម្ម៉ង់ Real-time -->
-            <div class="col-lg-8">
-                <div class="admin-card p-4">
-                    <h5 class="fw-bold mb-3 text-dark">📊 បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ (Real-time)</h5>
-                    <div class="table-responsive">
-                        <table class="table table-borderless align-middle">
-                            <thead>
-                                <tr class="text-secondary border-bottom">
-                                    <th>តុ</th>
-                                    <th>ទំនិញ</th>
-                                    <th>ចំនួន</th>
-                                    <th>ចំណាំ</th>
-                                    <th>ស្ថានភាព</th>
-                                    <th>សកម្មភាព</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sales-list">
-                                <% salesItems.forEach(s => { %>
-                                <tr id="order-row-<%= s.id %>" class="border-bottom">
-                                    <td><span class="badge bg-dark rounded-3 px-2 py-1">តុ <%= s.table_num %></span></td>
-                                    <td class="fw-bold text-dark"><%= s.item_name %></td>
-                                    <td class="fw-medium"><%= s.quantity %> <small class="text-secondary">(ស្ករ <%= s.sugar %>)</small></td>
-                                    <td class="text-muted"><small><%= s.note || '-' %></small></td>
-                                    
-                                    <td>
-                                        <% if(s.status === 'pending') { %>
-                                            <span class="status-badge status-pending" id="status-badge-<%= s.id %>">⏳ កំពុងឆុង</span>
-                                        <% } else if(s.status === 'ready') { %>
-                                            <span class="status-badge status-ready" id="status-badge-<%= s.id %>">☕ ឆុងរួចរាល់</span>
-                                        <% } else { %>
-                                            <span class="status-badge status-done" id="status-badge-<%= s.id %>">✅ បានទទួល</span>
-                                        <% } %>
-                                    </td>
-
-                                    <td>
-                                        <% if(s.status === 'pending') { %>
-                                            <form action="/<%= shopId %>/admin/order-status" method="POST" class="d-inline">
-                                                <input type="hidden" name="order_id" value="<%= s.id %>">
-                                                <input type="hidden" name="status" value="ready">
-                                                <button type="submit" class="btn btn-ios-action">ឆុងរួចរាល់</button>
-                                            </form>
-                                        <% } else { %>
-                                            <span class="text-muted small">-</span>
-                                        <% } %>
-                                    </td>
-                                </tr>
-                                <% }); %>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+        <div class="revenue-badge">
+            💰 $<%= grandTotal.toFixed(2) %>
         </div>
     </div>
 
+    <!-- 2. Slide Drawer Overlay & Content -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    
+    <div class="drawer-content" id="drawerContent">
+        <!-- Shop Profile -->
+        <div class="shop-profile-box">
+            <div class="profile-avatar">☕</div>
+            <h5 class="fw-bold text-white mb-1">ហាងបាយឈ្មោះច្រើន</h5>
+            <small class="text-white-50">ID: <%= shopId %></small>
+            <div class="mt-2">
+                <span class="badge bg-success bg-opacity-25 text-success border border-success rounded-pill px-2 py-1 fs-6">● Online</span>
+            </div>
+        </div>
+
+        <!-- Navigation Links inside Drawer -->
+        <div class="py-3 flex-grow-1">
+            <div class="drawer-nav-item active" id="navOrdersBtn" onclick="switchSection('orders')">
+                <span>📊</span>
+                <span>បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ</span>
+            </div>
+            <div class="drawer-nav-item" id="navMenuBtn" onclick="switchSection('menu')">
+                <span>☕</span>
+                <span>គ្រប់គ្រង Menu ហាង</span>
+            </div>
+        </div>
+
+        <div class="p-3 border-top border-secondary border-opacity-25">
+            <small class="text-white-50 d-block text-center">Coffee POS System v2.0</small>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="container py-3">
+
+        <!-- SECTION 1: បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ (Default Main Screen) -->
+        <div id="ordersSection" class="tab-content-section active">
+            <div class="admin-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark m-0">📋 កុម្ម៉ង់ Real-time</h5>
+                    <span class="badge bg-primary rounded-pill"><%= salesItems.length %> កុម្ម៉ង់</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle mb-0">
+                        <thead>
+                            <tr class="text-secondary border-bottom">
+                                <th>តុ</th>
+                                <th>ទំនិញ</th>
+                                <th>ចំនួន</th>
+                                <th>ចំណាំ</th>
+                                <th>ស្ថានភាព</th>
+                                <th>សកម្មភាព</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sales-list">
+                            <% if (salesItems.length === 0) { %>
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <div class="fs-2 mb-1">☕</div>
+                                        មិនទាន់មានការកុម្ម៉ង់នៅឡើយទេថ្ងៃនេះ
+                                    </td>
+                                </tr>
+                            <% } %>
+                            <% salesItems.forEach(s => { %>
+                            <tr class="border-bottom">
+                                <td><span class="badge bg-dark rounded-3 px-2 py-1">តុ <%= s.table_num %></span></td>
+                                <td class="fw-bold text-dark"><%= s.item_name %></td>
+                                <td class="fw-medium"><%= s.quantity %> <small class="text-secondary">(ស្ករ <%= s.sugar %>)</small></td>
+                                <td class="text-muted"><small><%= s.note || '-' %></small></td>
+                                <td>
+                                    <% if(s.status === 'pending') { %>
+                                        <span class="status-badge status-pending">⏳ កំពុងឆុង</span>
+                                    <% } else { %>
+                                        <span class="status-badge status-ready">☕ ឆុងរួចរាល់</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if(s.status === 'pending') { %>
+                                        <form action="/<%= shopId %>/admin/order-status" method="POST" class="d-inline">
+                                            <input type="hidden" name="order_id" value="<%= s.id %>">
+                                            <input type="hidden" name="status" value="ready">
+                                            <button type="submit" class="btn btn-ios-action">ឆុងរួចរាល់</button>
+                                        </form>
+                                    <% } else { %>
+                                        <span class="text-muted small">-</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: គ្រប់គ្រង Menu ( នៅក្នុង Single Combined Card ) -->
+        <div id="menuSection" class="tab-content-section">
+            <div class="admin-card p-4">
+                
+                <!-- ផ្នែកបន្ថែម Menu ថ្មី -->
+                <h5 class="fw-bold mb-3 text-dark">➕ បន្ថែម Menu ថ្មី</h5>
+                <form action="/<%= shopId %>/admin/menu/add" method="POST" enctype="multipart/form-data" class="mb-4 pb-4 border-bottom" onsubmit="saveTabState('menu')">
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold text-secondary">ឈ្មោះភេសជ្ជៈ</label>
+                        <input type="text" name="name" class="form-control ios-input" required placeholder="ឧ. ឡាតេ (Latte)">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold text-secondary">តម្លៃ ($)</label>
+                        <input type="number" step="0.01" name="price" class="form-control ios-input" required placeholder="2.50">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">📷 ជ្រើសរើសរូបភាព (Upload File)</label>
+                        <input type="file" name="image" class="form-control ios-input" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn btn-ios-primary w-100">រក្សាទុក Menu</button>
+                </form>
+
+                <!-- ផ្នែកបញ្ជី Menu ដែលមានស្រាប់ -->
+                <h5 class="fw-bold mb-3 text-dark">📋 បញ្ជី Menu ដែលមាន</h5>
+                <ul class="list-group list-group-flush bg-transparent">
+                    <% if (menuItems.length === 0) { %>
+                        <li class="list-group-item bg-transparent text-center text-muted py-3">មិនទាន់មាន Menu ទេ</li>
+                    <% } %>
+                    <% menuItems.forEach(m => { %>
+                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-0 py-2 border-bottom">
+                        <div class="d-flex align-items-center gap-3">
+                            <% if(m.image_url) { %>
+                                <img src="<%= m.image_url %>" class="menu-thumb" alt="coffee">
+                            <% } else { %>
+                                <span class="fs-3">☕</span>
+                            <% } %>
+                            <div>
+                                <span class="fw-bold text-dark d-block fs-6"><%= m.name %></span>
+                                <span class="text-success fw-bold">$<%= m.price.toFixed(2) %></span>
+                            </div>
+                        </div>
+                        <form action="/<%= shopId %>/admin/menu/delete/<%= m.id %>" method="POST" class="m-0" onsubmit="saveTabState('menu')">
+                            <button type="submit" class="btn btn-ios-delete" onclick="return confirm('តើអ្នកពិតជាចង់លុបមែនទេ?')">លុប</button>
+                        </form>
+                    </li>
+                    <% }); %>
+                </ul>
+
+            </div>
+        </div>
+
+    </div>
+
     <script>
+        const drawerOverlay = document.getElementById('drawerOverlay');
+        const drawerContent = document.getElementById('drawerContent');
+        const openDrawerBtn = document.getElementById('openDrawerBtn');
+
+        function openDrawer() {
+            drawerOverlay.classList.add('active');
+            drawerContent.classList.add('active');
+        }
+
+        function closeDrawer() {
+            drawerOverlay.classList.remove('active');
+            drawerContent.classList.remove('active');
+        }
+
+        openDrawerBtn.addEventListener('click', openDrawer);
+        drawerOverlay.addEventListener('click', closeDrawer);
+
+        function saveTabState(tab) {
+            localStorage.setItem('activeAdminTab', tab);
+        }
+
+        function switchSection(section) {
+            closeDrawer();
+            saveTabState(section);
+
+            const ordersSec = document.getElementById('ordersSection');
+            const menuSec = document.getElementById('menuSection');
+            const navOrdersBtn = document.getElementById('navOrdersBtn');
+            const navMenuBtn = document.getElementById('navMenuBtn');
+            const headerTitle = document.getElementById('headerTitle');
+
+            if (section === 'orders') {
+                ordersSec.classList.add('active');
+                menuSec.classList.remove('active');
+                navOrdersBtn.classList.add('active');
+                navMenuBtn.classList.remove('active');
+                headerTitle.innerText = "📊 បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ";
+            } else if (section === 'menu') {
+                menuSec.classList.add('active');
+                ordersSec.classList.remove('active');
+                navMenuBtn.classList.add('active');
+                navOrdersBtn.classList.remove('active');
+                headerTitle.innerText = "☕ គ្រប់គ្រង Menu ហាង";
+            }
+        }
+
+        // Restore Tab State on Page Load
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedTab = localStorage.getItem('activeAdminTab') || 'orders';
+            switchSection(savedTab);
+        });
+
+        // Socket.io Real-time Event Handling
         const socket = io();
         const shopId = "<%= shopId %>";
         socket.emit('join_shop', shopId);
 
         socket.on('new_order', () => { window.location.reload(); });
         socket.on('customer_confirmed', () => { window.location.reload(); });
+        socket.on('menu_updated', () => { window.location.reload(); });
     </script>
 </body>
 </html>
