@@ -130,30 +130,7 @@ app.get('/admin', (req, res) => {
     res.redirect('/shop1/admin');
 });
 
-// ៤. ទំព័រ Admin Dashboard (មើល Menu, ប្រវត្តិលក់ប្រចាំថ្ងៃ និងគ្រប់គ្រង Status)
-app.get('/:shopId/admin', (req, res) => {
-    const shopId = req.params.shopId;
-    db.all(
-        "SELECT * FROM sales WHERE shop_id = ? AND date(created_at) = date('now', 'localtime') ORDER BY id DESC", 
-        [shopId], 
-        (err, salesItems) => {
-            db.get(
-                "SELECT SUM(total) as grandTotal FROM sales WHERE shop_id = ? AND date(created_at) = date('now', 'localtime')", 
-                [shopId], 
-                (err, row) => {
-                    db.all("SELECT * FROM menu WHERE shop_id = ?", [shopId], (err, menuItems) => {
-                        res.render('admin', { 
-                            menuItems: menuItems || [], 
-                            salesItems: salesItems || [], 
-                            grandTotal: (row && row.grandTotal) ? row.grandTotal : 0, 
-                            shopId 
-                        });
-                    });
-                }
-            );
-        }
-    );
-});
+
 
 // ៥. មុខងារ Admin បន្ថែម Menu ថ្មី
 app.post('/:shopId/admin/menu/add', (req, res) => {
@@ -242,6 +219,41 @@ app.post('/:shopId/customer/confirm-received', (req, res) => {
         res.json({ success: true });
     });
 });
+// បន្ថែម Middleware ការពារ Admin Route (អនុញ្ញាតតែ App Admin ឬ Localhost)
+const requireAdminApp = (req, res, next) => {
+    const userAgent = req.headers['user-agent'] || '';
+    if (userAgent.includes('Capacitor') || req.ip === '127.0.0.1' || req.ip === '::1' || req.ip.includes('127.0.0.1')) {
+        return next();
+    }
+    res.status(403).send("⛔ អ្នកមិនមានសិទ្ធិចូលកាន់ទំព័រ Admin ឡើយ!");
+};
+
+// ៤. ទំព័រ Admin Dashboard (យក requireAdminApp មកការពារនៅត្រង់នេះ)
+app.get('/:shopId/admin', requireAdminApp, (req, res) => {
+    const shopId = req.params.shopId;
+    db.all(
+        "SELECT * FROM sales WHERE shop_id = ? AND date(created_at) = date('now', 'localtime') ORDER BY id DESC", 
+        [shopId], 
+        (err, salesItems) => {
+            db.get(
+                "SELECT SUM(total) as grandTotal FROM sales WHERE shop_id = ? AND date(created_at) = date('now', 'localtime')", 
+                [shopId], 
+                (err, row) => {
+                    db.all("SELECT * FROM menu WHERE shop_id = ?", [shopId], (err, menuItems) => {
+                        res.render('admin', { 
+                            menuItems: menuItems || [], 
+                            salesItems: salesItems || [], 
+                            grandTotal: (row && row.grandTotal) ? row.grandTotal : 0, 
+                            shopId 
+                        });
+                    });
+                }
+            );
+        }
+    );
+});
+
+
 
 // 5. Start Server
 const PORT = process.env.PORT || 8000;
