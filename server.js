@@ -129,7 +129,7 @@ app.post('/:shopId/admin/order-status', requireAdminApp, (req, res) => {
     res.redirect(`/${shopId}/admin`);
 });
 
-// ៥. ទំព័រ Menu សម្រាប់ Customer (ស្កែន QR)
+// ៥. ទំព័រ Menu សម្រាប់ Customer (ស្កែន QR) -> Render ទៅ menu.ejs
 app.get('/:shopId', (req, res) => {
     const { shopId } = req.params;
     const tableNum = req.query.table || '1';
@@ -140,7 +140,7 @@ app.get('/:shopId', (req, res) => {
     while (menuStmt.step()) menuItems.push(menuStmt.getAsObject());
     menuStmt.free();
 
-    res.render('index', { shopId, tableNum, menuItems });
+    res.render('menu', { shopId, tableNum, menuItems });
 });
 
 // ៦. Customer ចុច Order (ការពារតម្លៃ undefined និងបាញ់ Socket ទៅ Admin)
@@ -161,7 +161,7 @@ app.post('/:shopId/order', (req, res) => {
     );
     saveDB();
 
-    // 🔴 បាញ់ Socket ទៅកាន់ Admin Dashboard ឱ្យ Auto Refresh
+    // បាញ់ Socket ទៅកាន់ Admin Dashboard ឱ្យ Auto Refresh
     io.to(shopId).emit('new_order');
 
     res.redirect(`/${shopId}?table=${safeTableNum}`);
