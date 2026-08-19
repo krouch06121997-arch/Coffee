@@ -6,14 +6,14 @@
     <title>Admin Dashboard - <%= shopId %></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
     
     <style>
         :root {
             --ios-bg: #120C08;
-            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-bg: rgba(255, 255, 255, 0.96);
             --gold-grad: linear-gradient(135deg, #D4A373 0%, #B9834E 100%);
             --ios-green: #34C759;
             --ios-red: #FF3B30;
@@ -25,7 +25,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', sans-serif;
             background: var(--ios-bg);
-            background-image: radial-gradient(at 0% 0%, rgba(212, 163, 115, 0.15) 0px, transparent 50%);
+            background-image: radial-gradient(at 0% 0%, rgba(212, 163, 115, 0.12) 0px, transparent 50%);
             background-attachment: fixed;
             min-height: 100vh;
             color: #1c1c1e;
@@ -33,27 +33,26 @@
         }
 
         .admin-navbar {
-            background: rgba(30, 20, 15, 0.85);
+            background: rgba(30, 20, 15, 0.9);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             position: sticky;
             top: 0;
             z-index: 1020;
-            padding: 12px 16px;
+            padding: 10px 16px;
         }
 
         .menu-toggle-btn {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             color: #FFFFFF;
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -87,8 +86,8 @@
             left: calc(-1 * var(--sidebar-width));
             width: var(--sidebar-width);
             height: 100%;
-            background: #1C120C;
-            border-right: 1px solid rgba(255, 255, 255, 0.12);
+            background: #19100B;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
             z-index: 1050;
             transition: left 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
             display: flex;
@@ -101,41 +100,40 @@
         }
 
         .shop-profile-box {
-            padding: 24px 20px;
-            background: linear-gradient(180deg, rgba(212, 163, 115, 0.2) 0%, transparent 100%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 20px 16px;
+            background: linear-gradient(180deg, rgba(212, 163, 115, 0.15) 0%, transparent 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .profile-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 18px;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
             background: var(--gold-grad);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
-            box-shadow: 0 6px 16px rgba(212, 163, 115, 0.3);
-            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(212, 163, 115, 0.25);
+            margin-bottom: 10px;
         }
 
         .drawer-nav-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 14px 20px;
-            color: rgba(255, 255, 255, 0.7);
+            padding: 12px 16px;
+            color: rgba(255, 255, 255, 0.65);
             text-decoration: none;
-            font-weight: 600;
-            font-size: 0.95rem;
-            border-radius: 14px;
-            margin: 4px 12px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border-radius: 10px;
+            margin: 3px 10px;
             transition: all 0.2s ease;
             cursor: pointer;
         }
 
         .drawer-nav-item:hover, .drawer-nav-item.active {
-            background: rgba(212, 163, 115, 0.2);
+            background: rgba(212, 163, 115, 0.15);
             color: #FFE8D6;
         }
 
@@ -143,63 +141,69 @@
             background: var(--card-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             overflow: hidden;
+            padding: 20px;
         }
 
         .revenue-badge {
             background: var(--gold-grad);
             color: #FFFFFF;
-            border-radius: 14px;
-            padding: 8px 16px;
-            box-shadow: 0 4px 15px rgba(212, 163, 115, 0.35);
-            font-weight: 700;
-            font-size: 0.9rem;
+            border-radius: 10px;
+            padding: 6px 14px;
+            box-shadow: 0 3px 10px rgba(212, 163, 115, 0.3);
+            font-weight: 600;
+            font-size: 0.85rem;
         }
 
         .ios-input {
             background-color: var(--ios-gray) !important;
             border: 1px solid transparent !important;
-            border-radius: 12px !important;
-            padding: 10px 14px;
+            border-radius: 10px !important;
+            padding: 9px 12px;
+            font-size: 0.9rem;
         }
 
         .btn-ios-primary {
             background: linear-gradient(135deg, #34C759 0%, #24A148 100%);
             color: white;
             border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            padding: 11px;
-            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
-            transition: all 0.15s ease;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 10px;
+            box-shadow: 0 3px 10px rgba(52, 199, 89, 0.25);
         }
 
         .btn-ios-action {
-            background: linear-gradient(135deg, #007AFF 0%, #0056B3 100%);
-            color: white;
+            background: rgba(0, 122, 255, 0.12);
+            color: var(--ios-blue);
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: 600;
-            padding: 6px 14px;
+            font-size: 0.8rem;
+            padding: 5px 12px;
+            transition: all 0.15s ease;
         }
+        .btn-ios-action:hover { background: var(--ios-blue); color: #fff; }
 
         .btn-ios-delete {
-            background: rgba(255, 59, 48, 0.12);
+            background: rgba(255, 59, 48, 0.1);
             color: var(--ios-red);
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: 600;
-            padding: 6px 12px;
+            font-size: 0.8rem;
+            padding: 5px 10px;
         }
 
         .status-badge {
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 0.82rem;
-            font-weight: 700;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
             display: inline-block;
         }
 
@@ -207,15 +211,15 @@
         .status-ready { background: #E0F2FE; color: #075985; }
 
         .menu-thumb {
-            width: 46px;
-            height: 46px;
+            width: 40px;
+            height: 40px;
             object-fit: cover;
-            border-radius: 12px;
+            border-radius: 10px;
         }
 
         .tab-content-section {
             display: none;
-            animation: fadeIn 0.3s ease-out;
+            animation: fadeIn 0.25s ease-out;
         }
 
         .tab-content-section.active {
@@ -224,23 +228,23 @@
 
         .qr-card {
             background: #FFFFFF;
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: 14px;
+            padding: 16px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
             border: 1px solid #E5E7EB;
-            max-width: 320px;
+            max-width: 280px;
             margin: 0 auto;
         }
 
         .qr-card img {
             width: 100%;
-            max-width: 220px;
-            border-radius: 8px;
+            max-width: 180px;
+            border-radius: 6px;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
+            from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
@@ -248,12 +252,14 @@
 <body>
 
     <div class="admin-navbar d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center gap-3">
-            <button class="menu-toggle-btn" id="openDrawerBtn">☰</button>
-            <h5 class="fw-bold text-white mb-0" id="headerTitle">📊 បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ</h5>
+        <div class="d-flex align-items-center gap-2">
+            <button class="menu-toggle-btn" id="openDrawerBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <h6 class="fw-semibold text-white mb-0" id="headerTitle" style="font-size: 0.95rem;">បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ</h6>
         </div>
         <div class="revenue-badge">
-            💰 $<%= grandTotal.toFixed(2) %>
+            $<%= grandTotal.toFixed(2) %>
         </div>
     </div>
 
@@ -261,94 +267,94 @@
     
     <div class="drawer-content" id="drawerContent">
         <div class="shop-profile-box">
-            <div class="profile-avatar">☕</div>
-            <h5 class="fw-bold text-white mb-1">ហាងបាយឈ្មោះច្រើន</h5>
-            <small class="text-white-50">ID: <%= shopId %></small>
+            <div class="profile-avatar">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+            </div>
+            <h6 class="fw-semibold text-white mb-1" style="font-size: 0.9rem;">ហាងកាហ្វេ POS</h6>
+            <span class="text-white-50" style="font-size: 0.75rem;">ID: <%= shopId %></span>
             <div class="mt-2">
-                <span class="badge bg-success bg-opacity-25 text-success border border-success rounded-pill px-2 py-1 fs-6">● Online</span>
+                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 rounded-pill px-2 py-0.5" style="font-size: 0.7rem;">● Online</span>
             </div>
         </div>
 
-        <div class="py-3 flex-grow-1">
+        <div class="py-2 flex-grow-1">
             <div class="drawer-nav-item active" id="navOrdersBtn" onclick="switchSection('orders')">
-                <span>📊</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="2"></rect><line x1="9" y1="12" x2="15" y2="12"></line><line x1="9" y1="16" x2="13" y2="16"></line></svg>
                 <span>បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ</span>
             </div>
             <div class="drawer-nav-item" id="navHistoryBtn" onclick="switchSection('history')">
-                <span>📂</span>
-                <span>ប្រវត្តិលក់ (Sales History)</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                <span>ប្រវត្តិការលក់</span>
             </div>
             <div class="drawer-nav-item" id="navMenuBtn" onclick="switchSection('menu')">
-                <span>☕</span>
-                <span>គ្រប់គ្រង Menu ហាង</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>គ្រប់គ្រង Menu</span>
             </div>
             <div class="drawer-nav-item" id="navQrBtn" onclick="switchSection('qr')">
-                <span>📱</span>
-                <span>ទាញយក QR Code តុ</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span>QR Code តុ</span>
             </div>
         </div>
 
-        <div class="p-3 border-top border-secondary border-opacity-25">
-            <small class="text-white-50 d-block text-center">Coffee POS System v2.1</small>
+        <div class="p-3 border-top border-secondary border-opacity-10 text-center">
+            <span class="text-white-50" style="font-size: 0.7rem;">POS System v2.2</span>
         </div>
     </div>
 
-    <div class="container py-3">
+    <div class="container py-3" style="max-width: 600px;">
 
         <!-- SECTION 1: បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ -->
         <div id="ordersSection" class="tab-content-section active">
-            <div class="admin-card p-4">
+            <div class="admin-card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold text-dark m-0">📋 កុម្ម៉ង់ Real-time</h5>
-                    <div class="d-flex gap-2">
-                        <span class="badge bg-primary rounded-pill d-flex align-items-center"><%= salesItems.length %> កុម្ម៉ង់</span>
-                        <!-- ប៊ូតុងបិទវេន (Close Shift) -->
-                        <form action="/<%= shopId %>/admin/close-shift" method="POST" class="m-0" onsubmit="return confirm('តើអ្នកចង់បិទវេន និងប្តូរចូលថ្ងៃថ្មីមែនទេ? ទិន្នន័យថ្ងៃនេះនឹងត្រូវរក្សាទុកក្នុងប្រវត្តិលក់។')">
-                            <button type="submit" class="btn btn-sm btn-danger fw-bold rounded-pill px-3">🔄 បិទវេន / ថ្ងៃថ្មី</button>
+                    <span class="fw-semibold text-dark" style="font-size: 0.9rem;">កុម្ម៉ង់ Real-time</span>
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="badge bg-light text-secondary border rounded-pill px-2 py-1" style="font-size: 0.75rem;"><%= salesItems.length %> កុម្ម៉ង់</span>
+                        <form action="/<%= shopId %>/admin/close-shift" method="POST" class="m-0" onsubmit="return confirm('តើអ្នកចង់បិទវេន និងប្តូរចូលថ្ងៃថ្មីមែនទេ?')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger fw-medium rounded-pill px-2.5 py-1" style="font-size: 0.75rem;">បិទវេន</button>
                         </form>
                     </div>
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-borderless align-middle mb-0">
+                    <table class="table table-borderless align-middle mb-0" style="font-size: 0.85rem;">
                         <thead>
-                            <tr class="text-secondary border-bottom">
-                                <th>តុ</th>
-                                <th>ទំនិញ</th>
-                                <th>ចំនួន</th>
-                                <th>ចំណាំ</th>
-                                <th>ស្ថានភាព</th>
-                                <th>សកម្មភាព</th>
+                            <tr class="text-secondary border-bottom border-opacity-10" style="font-size: 0.75rem;">
+                                <th class="pb-2">តុ</th>
+                                <th class="pb-2">ទំនិញ</th>
+                                <th class="pb-2">ចំនួន</th>
+                                <th class="pb-2">ចំណាំ</th>
+                                <th class="pb-2">ស្ថានភាព</th>
+                                <th class="pb-2 text-end">សកម្មភាព</th>
                             </tr>
                         </thead>
                         <tbody id="sales-list">
                             <% if (salesItems.length === 0) { %>
                                 <tr>
-                                    <td colspan="6" class="text-center py-5 text-muted">
-                                        <div class="fs-2 mb-1">☕</div>
-                                        មិនទាន់មានការកុម្ម៉ង់នៅឡើយទេថ្ងៃនេះ
+                                    <td colspan="6" class="text-center py-4 text-muted" style="font-size: 0.85rem;">
+                                        មិនទាន់មានការកុម្ម៉ង់ថ្ងៃនេះទេ
                                     </td>
                                 </tr>
                             <% } %>
                             <% salesItems.forEach(s => { %>
-                            <tr class="border-bottom">
-                                <td><span class="badge bg-dark rounded-3 px-2 py-1">តុ <%= s.table_num %></span></td>
-                                <td class="fw-bold text-dark"><%= s.item_name %></td>
-                                <td class="fw-medium"><%= s.quantity %> <small class="text-secondary">(ស្ករ <%= s.sugar %>)</small></td>
+                            <tr class="border-bottom border-opacity-10">
+                                <td><span class="badge bg-dark bg-opacity-75 rounded-2 px-1.5 py-0.5" style="font-size: 0.75rem;">តុ <%= s.table_num %></span></td>
+                                <td class="fw-medium text-dark"><%= s.item_name %></td>
+                                <td class="text-secondary"><%= s.quantity %> <small>(ស្ករ <%= s.sugar %>)</small></td>
                                 <td class="text-muted"><small><%= s.note || '-' %></small></td>
                                 <td>
                                     <% if(s.status === 'pending') { %>
-                                        <span class="status-badge status-pending">⏳ កំពុងឆុង</span>
+                                        <span class="status-badge status-pending">កំពុងឆុង</span>
                                     <% } else { %>
-                                        <span class="status-badge status-ready">☕ ឆុងរួចរាល់</span>
+                                        <span class="status-badge status-ready">រួចរាល់</span>
                                     <% } %>
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     <% if(s.status === 'pending') { %>
                                         <form action="/<%= shopId %>/admin/order-status" method="POST" class="d-inline">
                                             <input type="hidden" name="order_id" value="<%= s.id %>">
                                             <input type="hidden" name="status" value="ready">
-                                            <button type="submit" class="btn btn-ios-action">ឆុងរួចរាល់</button>
+                                            <button type="submit" class="btn btn-ios-action">ឆុងរួច</button>
                                         </form>
                                     <% } else { %>
                                         <span class="text-muted small">-</span>
@@ -362,41 +368,40 @@
             </div>
         </div>
 
-        <!-- SECTION 2: ប្រវត្តិលក់ (Sales History) -->
+        <!-- SECTION 2: ប្រវត្តិការលក់ -->
         <div id="historySection" class="tab-content-section">
-            <div class="admin-card p-4">
+            <div class="admin-card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold text-dark m-0">📂 ប្រវត្តិការលក់កន្លងមក</h5>
-                    <span class="badge bg-secondary rounded-pill"><%= historyItems.length %> កំណត់ត្រា</span>
+                    <span class="fw-semibold text-dark" style="font-size: 0.9rem;">ប្រវត្តិការលក់កន្លងមក</span>
+                    <span class="badge bg-light text-secondary border rounded-pill px-2 py-1" style="font-size: 0.75rem;"><%= historyItems.length %> កំណត់ត្រា</span>
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-borderless align-middle mb-0">
+                    <table class="table table-borderless align-middle mb-0" style="font-size: 0.85rem;">
                         <thead>
-                            <tr class="text-secondary border-bottom">
-                                <th>កាលបរិច្ឆេទ</th>
-                                <th>តុ</th>
-                                <th>ទំនិញ</th>
-                                <th>ចំនួន</th>
-                                <th>តម្លៃសរុប</th>
+                            <tr class="text-secondary border-bottom border-opacity-10" style="font-size: 0.75rem;">
+                                <th class="pb-2">កាលបរិច្ឆេទ</th>
+                                <th class="pb-2">តុ</th>
+                                <th class="pb-2">ទំនិញ</th>
+                                <th class="pb-2">ចំនួន</th>
+                                <th class="pb-2 text-end">សរុប</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% if (historyItems.length === 0) { %>
                                 <tr>
-                                    <td colspan="5" class="text-center py-5 text-muted">
-                                        <div class="fs-2 mb-1">📜</div>
-                                        មិនទាន់មានប្រវត្តិលក់កន្លងមកនៅឡើយទេ
+                                    <td colspan="5" class="text-center py-4 text-muted" style="font-size: 0.85rem;">
+                                        មិនទាន់មានប្រវត្តិលក់ទេ
                                     </td>
                                 </tr>
                             <% } %>
                             <% historyItems.forEach(h => { %>
-                            <tr class="border-bottom">
-                                <td><span class="badge bg-light text-dark border px-2 py-1"><%= h.shift_date %></span></td>
-                                <td><span class="badge bg-dark rounded-3 px-2 py-1">តុ <%= h.table_num %></span></td>
-                                <td class="fw-bold text-dark"><%= h.item_name %></td>
-                                <td class="fw-medium"><%= h.quantity %> <small class="text-secondary">(ស្ករ <%= h.sugar %>)</small></td>
-                                <td class="text-success fw-bold">$<%= h.total_price.toFixed(2) %></td>
+                            <tr class="border-bottom border-opacity-10">
+                                <td><span class="text-secondary" style="font-size: 0.75rem;"><%= h.shift_date %></span></td>
+                                <td><span class="badge bg-dark bg-opacity-75 rounded-2 px-1.5 py-0.5" style="font-size: 0.75rem;">តុ <%= h.table_num %></span></td>
+                                <td class="fw-medium text-dark"><%= h.item_name %></td>
+                                <td class="text-secondary"><%= h.quantity %> <small>(ស្ករ <%= h.sugar %>)</small></td>
+                                <td class="text-success fw-semibold text-end">$<%= h.total_price.toFixed(2) %></td>
                             </tr>
                             <% }); %>
                         </tbody>
@@ -407,44 +412,44 @@
 
         <!-- SECTION 3: គ្រប់គ្រង Menu -->
         <div id="menuSection" class="tab-content-section">
-            <div class="admin-card p-4">
-                <h5 class="fw-bold mb-3 text-dark">➕ បន្ថែម Menu ថ្មី</h5>
-                <form action="/<%= shopId %>/admin/menu/add" method="POST" enctype="multipart/form-data" class="mb-4 pb-4 border-bottom" onsubmit="saveTabState('menu')">
+            <div class="admin-card">
+                <span class="fw-semibold mb-3 d-block text-dark" style="font-size: 0.9rem;">បន្ថែម Menu ថ្មី</span>
+                <form action="/<%= shopId %>/admin/menu/add" method="POST" enctype="multipart/form-data" class="mb-4 pb-3 border-bottom border-opacity-10" onsubmit="saveTabState('menu')">
                     <div class="mb-2">
-                        <label class="form-label small fw-bold text-secondary">ឈ្មោះភេសជ្ជៈ</label>
-                        <input type="text" name="name" class="form-control ios-input" required placeholder="ឧ. ឡាតេ (Latte)">
+                        <label class="form-label text-secondary" style="font-size: 0.75rem;">ឈ្មោះភេសជ្ជៈ</label>
+                        <input type="text" name="name" class="form-control ios-input" required placeholder="ឧ. ឡាតេ">
                     </div>
                     <div class="mb-2">
-                        <label class="form-label small fw-bold text-secondary">តម្លៃ ($)</label>
+                        <label class="form-label text-secondary" style="font-size: 0.75rem;">តម្លៃ ($)</label>
                         <input type="number" step="0.01" name="price" class="form-control ios-input" required placeholder="2.50">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-secondary">📷 ជ្រើសរើសរូបភាព (Upload File)</label>
+                        <label class="form-label text-secondary" style="font-size: 0.75rem;">រូបភាពភេសជ្ជៈ</label>
                         <input type="file" name="image" class="form-control ios-input" accept="image/*">
                     </div>
-                    <button type="submit" class="btn btn-ios-primary w-100">រក្សាទុក Menu</button>
+                    <button type="submit" class="btn btn-ios-primary w-100">រក្សាទុក</button>
                 </form>
 
-                <h5 class="fw-bold mb-3 text-dark">📋 បញ្ជី Menu ដែលមាន</h5>
-                <ul class="list-group list-group-flush bg-transparent">
+                <span class="fw-semibold mb-2 d-block text-dark" style="font-size: 0.9rem;">បញ្ជី Menu ដែលមាន</span>
+                <ul class="list-group list-group-flush bg-transparent" style="font-size: 0.85rem;">
                     <% if (menuItems.length === 0) { %>
                         <li class="list-group-item bg-transparent text-center text-muted py-3">មិនទាន់មាន Menu ទេ</li>
                     <% } %>
                     <% menuItems.forEach(m => { %>
-                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-0 py-2 border-bottom">
-                        <div class="d-flex align-items-center gap-3">
+                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-0 py-2 border-bottom border-opacity-10">
+                        <div class="d-flex align-items-center gap-2.5">
                             <% if(m.image_url) { %>
                                 <img src="<%= m.image_url %>" class="menu-thumb" alt="coffee">
                             <% } else { %>
-                                <span class="fs-3">☕</span>
+                                <div class="menu-thumb bg-light d-flex align-items-center justify-content-center text-muted">☕</div>
                             <% } %>
                             <div>
-                                <span class="fw-bold text-dark d-block fs-6"><%= m.name %></span>
-                                <span class="text-success fw-bold">$<%= m.price.toFixed(2) %></span>
+                                <span class="fw-medium text-dark d-block" style="font-size: 0.85rem;"><%= m.name %></span>
+                                <span class="text-success" style="font-size: 0.75rem; font-weight: 600;">$<%= m.price.toFixed(2) %></span>
                             </div>
                         </div>
                         <form action="/<%= shopId %>/admin/menu/delete/<%= m.id %>" method="POST" class="m-0" onsubmit="saveTabState('menu')">
-                            <button type="submit" class="btn btn-ios-delete" onclick="return confirm('តើអ្នកពិតជាចង់លុបមែនទេ?')">លុប</button>
+                            <button type="submit" class="btn btn-ios-delete" onclick="return confirm('លុប Menu នេះ?')">លុប</button>
                         </form>
                     </li>
                     <% }); %>
@@ -452,16 +457,15 @@
             </div>
         </div>
 
-        <!-- SECTION 4: ទាញយក QR Code តុ -->
+        <!-- SECTION 4: QR Code តុ -->
         <div id="qrSection" class="tab-content-section">
-            <div class="admin-card p-4 text-center">
-                <h5 class="fw-bold mb-2 text-dark">📱 QR Code សម្រាប់ហាង (Scan ចូលគ្រប់តុ)</h5>
-                <p class="text-muted small mb-4">លោកអ្នកគ្រាន់តែ Print រូបភាព QR Code នេះតែមួយសន្លឹក រួចយកទៅបិទលើគ្រប់តុទាំងអស់ក្នុងហាង។ ភ្ញៀវ Scan រួចអាចជ្រើសរើសលេខតុដោយខ្លួនឯង:</p>
+            <div class="admin-card text-center">
+                <span class="fw-semibold mb-1 d-block text-dark" style="font-size: 0.9rem;">QR Code សម្រាប់តុហាង</span>
+                <p class="text-muted mb-3" style="font-size: 0.75rem;">Scan រួចជ្រើសរើសលេខតុដោយខ្លួនឯង</p>
                 
                 <div class="qr-card">
-                    <h6 class="fw-bold text-dark mb-3">☕ Master QR Code</h6>
-                    <img src="/qrcodes/master.png" alt="Master QR Code" class="img-fluid mb-3">
-                    <a href="/qrcodes/master.png" download="Shop-Master-QR.png" class="btn btn-sm btn-dark w-100 rounded-3 py-2 fw-bold">📥 Download QR Code នេះ</a>
+                    <img src="/qrcodes/master.png" alt="Master QR Code" class="img-fluid mb-2">
+                    <a href="/qrcodes/master.png" download="Shop-Master-QR.png" class="btn btn-sm btn-dark w-100 rounded-2 py-1.5 fw-medium" style="font-size: 0.8rem;">ទាញយក QR Code</a>
                 </div>
             </div>
         </div>
@@ -518,19 +522,19 @@
             if (section === 'orders') {
                 ordersSec.classList.add('active');
                 navOrdersBtn.classList.add('active');
-                headerTitle.innerText = "📊 បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ";
+                headerTitle.innerText = "បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ";
             } else if (section === 'history') {
                 historySec.classList.add('active');
                 navHistoryBtn.classList.add('active');
-                headerTitle.innerText = "📂 ប្រវត្តិការលក់កន្លងមក";
+                headerTitle.innerText = "ប្រវត្តិការលក់";
             } else if (section === 'menu') {
                 menuSec.classList.add('active');
                 navMenuBtn.classList.add('active');
-                headerTitle.innerText = "☕ គ្រប់គ្រង Menu ហាង";
+                headerTitle.innerText = "គ្រប់គ្រង Menu";
             } else if (section === 'qr') {
                 qrSec.classList.add('active');
                 navQrBtn.classList.add('active');
-                headerTitle.innerText = "📱 QR Code សម្រាប់តុ";
+                headerTitle.innerText = "QR Code តុ";
             }
         }
 
