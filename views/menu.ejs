@@ -290,7 +290,6 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // Managing Table Number via LocalStorage so 1 QR Code works for all tables seamlessly
         document.addEventListener("DOMContentLoaded", () => {
             const shopId = "<%= shopId %>";
             const storageKey = `coffee_table_${shopId}`;
@@ -347,11 +346,22 @@
             }
         }
 
-        const socket = io();
+        // កែសម្រួល Socket សម្រាប់ Client ឱ្យមាន Auto-Reconnect ផងដែរ
+        const socket = io({
+            reconnection: true,
+            reconnectionAttempts: Infinity,
+            reconnectionDelay: 1000,
+            timeout: 20000
+        });
+
         const shopId = "<%= shopId %>";
         socket.emit('join_shop', shopId);
 
         socket.on('menu_updated', () => {
+            window.location.reload();
+        });
+
+        socket.on('reconnect', () => {
             window.location.reload();
         });
     </script>
