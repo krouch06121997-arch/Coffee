@@ -243,8 +243,24 @@ app.use(cors({
     credentials: true
 }));
 
-// Route សម្រាប់ចូល Admin Panel
+// ១. Route សម្រាប់ Admin (ត្រូវដាក់នៅខាងលើកុំឱ្យច្រឡំជាមួយ :shopId)
 app.get('/admin', (req, res) => {
-    // ហៅទៅកាន់ file views/admin.ejs
-    res.render('admin');
+    db.all("SELECT * FROM menu", [], (err, items) => {
+        res.render('admin', { items: items || [] });
+    });
+});
+
+// Route សម្រាប់ Post បន្ថែម Menu ថ្មី
+app.post('/admin/add', (req, res) => {
+    const { shop_id, item_name, price } = req.body;
+    db.run("INSERT INTO menu (shop_id, item_name, price) VALUES (?, ?, ?)", 
+    [shop_id || 'shop1', item_name, price], (err) => {
+        res.redirect('/admin');
+    });
+});
+
+// --------------------------------------------------
+// ២. Route សម្រាប់អតិថិជន (ត្រូវដាក់នៅក្រោម /admin)
+app.get('/:shopId', (req, res) => {
+    // ... កូដចាស់របស់អ្នក ...
 });
