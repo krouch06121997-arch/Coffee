@@ -11,32 +11,28 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-// រៀបចំ Folder សម្រាប់រក្សារូបភាព Upload និង QR Codes
 const uploadDir = path.join(__dirname, 'public/uploads');
 const qrDir = path.join(__dirname, 'public/qrcodes');
 
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 if (!fs.existsSync(qrDir)) fs.mkdirSync(qrDir, { recursive: true });
 
-// បង្កើត QR Code ១០ តុស្វ័យប្រវត្តិ (Hotspot IP: 192.168.43.1)
-async function generateTableQRCodes(shopId) {
+// បង្កើត Master QR Code តែ ១ គត់ សម្រាប់ហាងទាំងមូល
+async function generateMasterQRCode(shopId) {
     const baseUrl = 'http://192.168.43.1:8000';
-    for (let i = 1; i <= 10; i++) {
-        const qrPath = path.join(qrDir, `table-${i}.png`);
-        const targetUrl = `${baseUrl}/${shopId}?table=${i}`;
-        try {
-            await QRCode.toFile(qrPath, targetUrl, {
-                width: 400,
-                margin: 2,
-                color: { dark: '#120C08', light: '#FFFFFF' }
-            });
-        } catch (err) {
-            console.error(`Error generating QR for table ${i}:`, err);
-        }
+    const qrPath = path.join(qrDir, `master.png`);
+    const targetUrl = `${baseUrl}/${shopId}`;
+    try {
+        await QRCode.toFile(qrPath, targetUrl, {
+            width: 400,
+            margin: 2,
+            color: { dark: '#120C08', light: '#FFFFFF' }
+        });
+    } catch (err) {
+        console.error(`Error generating Master QR for shop ${shopId}:`, err);
     }
 }
 
-// ការរៀបចំ Multer Storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => {
@@ -125,8 +121,8 @@ io.on('connection', (socket) => {
 app.get('/:shopId/admin', requireAdminApp, async (req, res) => {
     const { shopId } = req.params;
 
-    // បង្កើត QR Code ១០ តុ
-    await generateTableQRCodes(shopId);
+    // បង្កើត Master QR Code តែ ១
+    await generateMasterQRCode(shopId);
 
     const menuStmt = db.prepare("SELECT * FROM menu WHERE shop_id = ?");
     menuStmt.bind([shopId]);
@@ -202,7 +198,6 @@ app.post('/:shopId/admin/order-status', requireAdminApp, (req, res) => {
     res.redirect(`/${shopId}/admin`);
 });
 
-// Customer View Route (បង្ហាញ menu.ejs ពេល Scan QR Code)
 app.get('/:shopId', (req, res) => {
     const { shopId } = req.params;
     const tableNum = req.query.table || '1';
