@@ -9,7 +9,13 @@ const QRCode = require('qrcode');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+
+// បន្ថែម Keep-Alive configuration ដើម្បីកុំឱ្យដាច់ការតភ្ជាប់ (Socket.io)
+const io = new Server(server, { 
+    cors: { origin: "*" },
+    pingTimeout: 60000,
+    pingInterval: 10000 
+});
 
 const uploadDir = path.join(__dirname, 'public/uploads');
 const qrDir = path.join(__dirname, 'public/qrcodes');
@@ -17,7 +23,6 @@ const qrDir = path.join(__dirname, 'public/qrcodes');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 if (!fs.existsSync(qrDir)) fs.mkdirSync(qrDir, { recursive: true });
 
-// បង្កើត Master QR Code តែ ១ គត់ សម្រាប់ហាងទាំងមូល
 async function generateMasterQRCode(shopId) {
     const baseUrl = 'http://192.168.43.1:8000';
     const qrPath = path.join(qrDir, `master.png`);
@@ -120,8 +125,6 @@ io.on('connection', (socket) => {
 
 app.get('/:shopId/admin', requireAdminApp, async (req, res) => {
     const { shopId } = req.params;
-
-    // បង្កើត Master QR Code តែ ១
     await generateMasterQRCode(shopId);
 
     const menuStmt = db.prepare("SELECT * FROM menu WHERE shop_id = ?");
