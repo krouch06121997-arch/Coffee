@@ -56,30 +56,6 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// ភ្ជាប់ Database SQLite
-const db = new sqlite3.Database('./coffee_shop.db', (err) => {
-    if (!err) {
-        db.run(`CREATE TABLE IF NOT EXISTS menu (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, 
-            shop_id TEXT NOT NULL DEFAULT 'shop1',
-            name TEXT NOT NULL, 
-            price REAL NOT NULL
-        )`);
-        
-        db.run(`CREATE TABLE IF NOT EXISTS sales (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, 
-            shop_id TEXT NOT NULL DEFAULT 'shop1',
-            table_num INTEGER, 
-            item_name TEXT, 
-            quantity INTEGER, 
-            sugar TEXT, 
-            note TEXT,
-            total REAL,
-            status TEXT DEFAULT 'pending',
-            created_at DATE DEFAULT CURRENT_TIMESTAMP
-        )`);
-    }
-});
 
 io.on('connection', (socket) => {
     socket.on('join_shop', (shopId) => socket.join(shopId));
