@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>កុម្ម៉ង់កាហ្វេ - តុ <span id="displayTableNum"><%= tableNum %></span></title>
+    <title>ម៉ឺនុយហាងកាហ្វេ - តុ <span id="displayTableNum"><%= tableNum %></span></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11,11 +11,10 @@
     
     <style>
         :root {
-            --ios-bg: #140C07;
-            --card-bg: rgba(255, 255, 255, 0.95);
+            --ios-bg: #120C08;
+            --card-bg: rgba(255, 255, 255, 0.96);
             --coffee-primary: #3D2314;
             --coffee-accent: #D4A373;
-            --ios-green: #34C759;
             --ios-green-grad: linear-gradient(135deg, #34C759 0%, #24A148 100%);
             --ios-gray: #F2F2F7;
         }
@@ -23,31 +22,28 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', sans-serif;
             background: var(--ios-bg);
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(212, 163, 115, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(61, 35, 20, 0.5) 0px, transparent 50%);
-            background-size: cover;
-            background-position: center;
+            background-image: radial-gradient(at 0% 0%, rgba(212, 163, 115, 0.15) 0px, transparent 50%);
             background-attachment: fixed;
             min-height: 100vh;
             color: #1c1c1e;
-            padding-bottom: 24px;
+            padding-bottom: 40px;
         }
 
         .mobile-container {
             max-width: 440px;
             margin: 0 auto;
-            padding: 14px;
+            padding: 16px;
         }
 
         .ios-header {
-            background: rgba(20, 12, 7, 0.85);
+            background: rgba(25, 16, 11, 0.85);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
-            border-radius: 18px;
-            padding: 14px;
+            border-radius: 16px;
+            padding: 14px 16px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
         }
 
         .table-pill {
@@ -55,124 +51,136 @@
             color: #FFE8D6;
             border: 1px solid rgba(212, 163, 115, 0.3);
             border-radius: 99px;
-            padding: 4px 12px;
+            padding: 5px 14px;
             font-weight: 600;
             font-size: 0.8rem;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
+        .table-pill:active { transform: scale(0.95); }
 
         .menu-card {
             background: var(--card-bg);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border-radius: 18px;
+            border-radius: 16px;
             border: 1px solid rgba(255, 255, 255, 0.7);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
             overflow: hidden;
-            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            gap: 14px;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            margin-bottom: 12px;
+        }
+        .menu-card:active {
+            transform: scale(0.98);
         }
 
         .product-img {
-            width: 85px;
-            height: 85px;
+            width: 70px;
+            height: 70px;
             object-fit: cover;
-            border-radius: 14px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+
+        /* BottomSheet Modal Styling */
+        .modal-backdrop-custom {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1050;
+            opacity: 0; visibility: hidden;
+            transition: all 0.25s ease;
+        }
+        .modal-backdrop-custom.active { opacity: 1; visibility: visible; }
+
+        .bottom-sheet {
+            position: fixed;
+            bottom: -100%; left: 0; width: 100%;
+            background: #FFFFFF;
+            border-radius: 24px 24px 0 0;
+            z-index: 1060;
+            padding: 20px 20px 30px 20px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.3);
+            transition: bottom 0.35s cubic-bezier(0.1, 0.9, 0.2, 1);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .bottom-sheet.active { bottom: 0; }
+
+        .sheet-indicator {
+            width: 40px; height: 4px; background: #E5E7EB; border-radius: 99px; margin: 0 auto 16px auto;
         }
 
         .sugar-segmented {
             background: var(--ios-gray);
-            border-radius: 10px;
-            padding: 2px;
+            border-radius: 12px;
+            padding: 3px;
             display: flex;
-            gap: 2px;
+            gap: 3px;
         }
-
-        .sugar-segmented input[type="radio"] {
-            display: none;
-        }
-
+        .sugar-segmented input[type="radio"] { display: none; }
         .sugar-segmented label {
-            flex: 1;
-            text-align: center;
-            padding: 5px 0;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #6c757d;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.15s ease;
+            flex: 1; text-align: center; padding: 8px 0; font-size: 0.75rem; font-weight: 600; color: #6c757d; border-radius: 9px; cursor: pointer; transition: all 0.15s ease;
         }
-
         .sugar-segmented input[type="radio"]:checked + label {
-            background: #FFFFFF;
-            color: var(--coffee-primary);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background: #FFFFFF; color: var(--coffee-primary); box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
         .qty-btn {
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-            border: none;
-            background: var(--ios-gray);
-            font-weight: 700;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--coffee-primary);
+            width: 36px; height: 36px; border-radius: 10px; border: none; background: var(--ios-gray); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; color: var(--coffee-primary);
         }
-
         .qty-input {
-            width: 32px;
-            border: none;
-            background: transparent;
-            text-align: center;
-            font-weight: 700;
-            font-size: 0.9rem;
+            width: 40px; border: none; background: transparent; text-align: center; font-weight: 700; font-size: 1rem;
         }
 
         .ios-input-note {
-            background: var(--ios-gray) !important;
-            border: 1px solid transparent !important;
-            border-radius: 10px !important;
-            font-size: 0.8rem;
-            padding: 7px 10px;
+            background: var(--ios-gray) !important; border: 1px solid transparent !important; border-radius: 12px !important; font-size: 0.85rem; padding: 10px 14px;
         }
 
         .btn-ios-submit {
-            background: var(--ios-green-grad);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 10px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
+            background: var(--ios-green-grad); color: white; border: none; border-radius: 14px; padding: 12px; font-weight: 600; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(52, 199, 89, 0.35); width: 100%;
         }
+
+        /* Table Selector Modal */
+        .table-modal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+            background: #FFFFFF; border-radius: 20px; padding: 24px; width: 90%; max-width: 320px;
+            z-index: 1070; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            opacity: 0; visibility: hidden; transition: all 0.2s ease;
+        }
+        .table-modal.active { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
     </style>
 </head>
 <body>
     <div class="mobile-container">
         
         <!-- Header -->
-        <div class="ios-header text-center text-white mb-3">
-            <div class="d-flex justify-content-center align-items-center gap-1.5 mb-1">
-                <span style="font-size: 1.2rem;">☕</span>
-                <h6 class="m-0 fw-bold" style="font-size: 0.95rem;">ម៉ឺនុយហាងកាហ្វេ</h6>
+        <div class="ios-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <div style="width: 32px; height: 32px; background: rgba(212,163,115,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;">☕</div>
+                <h6 class="m-0 fw-bold text-white" style="font-size: 0.95rem;">ម៉ឺនុយហាង</h6>
             </div>
             <div>
-                <span class="table-pill" onclick="changeTable()">📍 តុលេខ <span id="currentTableText"><%= tableNum %></span> (ប្តូរ)</span>
+                <span class="table-pill" onclick="openTableModal()">
+                    <span>📍 តុទី <span id="currentTableText"><%= tableNum %></span></span>
+                </span>
             </div>
         </div>
 
-        <!-- Menu List -->
-        <div class="d-flex flex-column gap-2.5">
+        <!-- Menu List (Clean Compact Cards) -->
+        <div id="menuListContainer">
             <% if (items.length === 0) { %>
                 <div class="text-center py-5 text-white-50">
-                    <div class="fs-2 mb-2">☕</div>
                     <span style="font-size: 0.85rem;">មិនទាន់មាន Menu នៅឡើយទេ</span>
                 </div>
             <% } %>
@@ -183,76 +191,94 @@
                     const nameLower = item.name.toLowerCase();
                     if(nameLower.includes('latte') || nameLower.includes('ឡាតេ')) {
                         imgUrl = "https://images.unsplash.com/photo-1534778101976-62847782c213?q=80&w=300&auto=format&fit=crop";
-                    } else if(nameLower.includes('black') || nameLower.includes('ខ្មៅ') || nameLower.includes('americano')) {
+                    } else if(nameLower.includes('black') || nameLower.includes('ខ្មៅ')) {
                         imgUrl = "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=300&auto=format&fit=crop";
-                    } else if(nameLower.includes('green') || nameLower.includes('តែបៃតង') || nameLower.includes('matcha')) {
-                        imgUrl = "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?q=80&w=300&auto=format&fit=crop";
-                    } else if(nameLower.includes('milk') || nameLower.includes('តែដោះគោ')) {
-                        imgUrl = "https://images.unsplash.com/photo-1572442388796-11668a67e53d?q=80&w=300&auto=format&fit=crop";
                     } else {
                         imgUrl = "https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=300&auto=format&fit=crop";
                     }
                 }
             %>
-            <div class="menu-card p-2.5">
-                <form action="/<%= shopId %>/order" method="POST" onsubmit="attachTableToForm(this)">
-                    <input type="hidden" name="table" id="form_table_<%= idx %>" value="<%= tableNum %>">
-                    <input type="hidden" name="item_name" value="<%= item.name %>">
-                    <input type="hidden" name="price" value="<%= item.price %>">
-
-                    <div class="d-flex gap-2.5 align-items-center mb-2.5">
-                        <img src="<%= imgUrl %>" alt="<%= item.name %>" class="product-img">
-                        <div class="flex-grow-1">
-                            <h6 class="fw-semibold mb-1 text-dark" style="font-size: 0.95rem;"><%= item.name %></h6>
-                            <span class="text-success fw-bold" style="font-size: 0.85rem;">$<%= item.price.toFixed(2) %></span>
-                        </div>
-                    </div>
-
-                    <div class="mb-2">
-                        <label class="form-label mb-1 text-secondary" style="font-size: 0.7rem;"><span class="fw-semibold">កម្រិតស្ករ</span></label>
-                        <div class="sugar-segmented">
-                            <input type="radio" name="sugar" id="s100_<%= idx %>" value="100%" checked>
-                            <label for="s100_<%= idx %>">100%</label>
-                            <input type="radio" name="sugar" id="s75_<%= idx %>" value="75%">
-                            <label for="s75_<%= idx %>">75%</label>
-                            <input type="radio" name="sugar" id="s50_<%= idx %>" value="50%">
-                            <label for="s50_<%= idx %>">50%</label>
-                            <input type="radio" name="sugar" id="s25_<%= idx %>" value="25%">
-                            <label for="s25_<%= idx %>">25%</label>
-                            <input type="radio" name="sugar" id="s0_<%= idx %>" value="0%">
-                            <label for="s0_<%= idx %>">0%</label>
-                        </div>
-                    </div>
-
-                    <div class="row g-2 align-items-center mb-2.5">
-                        <div class="col-5">
-                            <div class="d-flex align-items-center bg-light rounded-2 p-0.5">
-                                <button type="button" class="qty-btn" onclick="decrementQty('<%= idx %>')">−</button>
-                                <input type="number" id="qty_<%= idx %>" name="qty" value="1" min="1" class="qty-input" readonly>
-                                <button type="button" class="qty-btn" onclick="incrementQty('<%= idx %>')">+</button>
-                            </div>
-                        </div>
-                        <div class="col-7">
-                            <input type="text" name="note" class="form-control ios-input-note" placeholder="ចំណាំ (ឧ. ទឹកកកតិច)">
-                        </div>
-                    </div>
-
-                    <div>
-                        <button type="submit" class="btn btn-ios-submit w-100">
-                            បញ្ជាទិញ
-                        </button>
-                    </div>
-                </form>
+            <div class="menu-card" onclick="openOrderSheet('<%= item.name %>', '<%= item.price %>', '<%= imgUrl %>')">
+                <img src="<%= imgUrl %>" alt="<%= item.name %>" class="product-img">
+                <div class="flex-grow-1">
+                    <h6 class="fw-semibold mb-1 text-dark" style="font-size: 0.95rem;"><%= item.name %></h6>
+                    <span class="text-success fw-bold" style="font-size: 0.9rem;">$<%= item.price.toFixed(2) %></span>
+                </div>
+                <div style="width: 28px; height: 28px; background: #F2F2F7; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #8E8E93;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
             </div>
             <% }); %>
         </div>
     </div>
 
+    <!-- Bottom Sheet Order Modal -->
+    <div class="modal-backdrop-custom" id="modalBackdrop" onclick="closeOrderSheet()"></div>
+    <div class="bottom-sheet" id="orderBottomSheet">
+        <div class="sheet-indicator"></div>
+        <form action="/<%= shopId %>/order" method="POST" id="orderForm" onsubmit="attachTableToForm(this)">
+            <input type="hidden" name="table" id="sheet_table_input" value="<%= tableNum %>">
+            <input type="hidden" name="item_name" id="sheet_item_name">
+            <input type="hidden" name="price" id="sheet_item_price">
+
+            <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+                <img id="sheet_img" src="" alt="" style="width: 55px; height: 55px; object-fit: cover; border-radius: 10px;">
+                <div>
+                    <h6 class="fw-bold mb-1 text-dark" id="sheet_title" style="font-size: 1rem;"></h6>
+                    <span class="text-success fw-bold" id="sheet_price_text" style="font-size: 0.9rem;"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label mb-1 text-secondary" style="font-size: 0.75rem; font-weight: 600;">កម្រិតស្ករ</label>
+                <div class="sugar-segmented">
+                    <input type="radio" name="sugar" id="s100" value="100%" checked><label for="s100">100%</label>
+                    <input type="radio" name="sugar" id="s75" value="75%"><label for="s75">75%</label>
+                    <input type="radio" name="sugar" id="s50" value="50%"><label for="s50">50%</label>
+                    <input type="radio" name="sugar" id="s25" value="25%"><label for="s25">25%</label>
+                    <input type="radio" name="sugar" id="s0" value="0%"><label for="s0">0%</label>
+                </div>
+            </div>
+
+            <div class="row g-2 align-items-center mb-3">
+                <div class="col-5">
+                    <label class="form-label mb-1 text-secondary" style="font-size: 0.75rem; font-weight: 600;">ចំនួន</label>
+                    <div class="d-flex align-items-center bg-light rounded-2 p-1">
+                        <button type="button" class="qty-btn" onclick="decrementQty()">−</button>
+                        <input type="number" id="qty_input" name="qty" value="1" min="1" class="qty-input" readonly>
+                        <button type="button" class="qty-btn" onclick="incrementQty()">+</button>
+                    </div>
+                </div>
+                <div class="col-7">
+                    <label class="form-label mb-1 text-secondary" style="font-size: 0.75rem; font-weight: 600;">ចំណាំ</label>
+                    <input type="text" name="note" class="form-control ios-input-note" placeholder="ឧ. ទឹកកកតិច">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-ios-submit">
+                បញ្ជាក់ការកុម្ម៉ង់
+            </button>
+        </form>
+    </div>
+
+    <!-- Table Selection Modal -->
+    <div class="modal-backdrop-custom" id="tableModalBackdrop" onclick="closeTableModal()"></div>
+    <div class="table-modal" id="tableModal">
+        <h6 class="fw-bold mb-2 text-dark" style="font-size: 1rem;">ជ្រើសរើសលេខតុ</h6>
+        <p class="text-muted mb-3" style="font-size: 0.8rem;">សូមបញ្ចូលលេខតុរបស់អ្នកថ្មី</p>
+        <input type="number" id="newTableInput" class="form-control ios-input-note mb-3" placeholder="ឧ. 10">
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-light w-50 rounded-3 py-2 fw-semibold" style="font-size: 0.85rem;" onclick="closeTableModal()">បោះបង់</button>
+            <button type="button" class="btn btn-dark w-50 rounded-3 py-2 fw-semibold" style="font-size: 0.85rem; background: var(--coffee-primary);" onclick="saveNewTable()">យល់ព្រម</button>
+        </div>
+    </div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        const shopId = "<%= shopId %>";
+        const storageKey = `coffee_table_${shopId}`;
+
         document.addEventListener("DOMContentLoaded", () => {
-            const shopId = "<%= shopId %>";
-            const storageKey = `coffee_table_${shopId}`;
             const urlParams = new URLSearchParams(window.location.search);
             let table = urlParams.get('table');
 
@@ -261,46 +287,65 @@
             } else {
                 table = localStorage.getItem(storageKey);
                 if (!table) {
-                    table = prompt("សូមបញ្ចូលលេខតុរបស់អ្នក:", "1");
-                    if (!table) table = "1";
+                    table = "1";
                     localStorage.setItem(storageKey, table);
                 }
             }
 
             document.getElementById('currentTableText').innerText = table;
-            document.querySelectorAll('input[name="table"]').forEach(input => {
-                input.value = table;
-            });
+            document.getElementById('sheet_table_input').value = table;
         });
 
-        function changeTable() {
-            const shopId = "<%= shopId %>";
-            const storageKey = `coffee_table_${shopId}`;
-            let newTable = prompt("ប្តូរលេខតុថ្មី:", localStorage.getItem(storageKey) || "1");
-            if (newTable) {
-                localStorage.setItem(storageKey, newTable);
-                document.getElementById('currentTableText').innerText = newTable;
-                document.querySelectorAll('input[name="table"]').forEach(input => {
-                    input.value = newTable;
-                });
+        function openTableModal() {
+            document.getElementById('tableModalBackdrop').classList.add('active');
+            document.getElementById('tableModal').classList.add('active');
+            document.getElementById('newTableInput').value = localStorage.getItem(storageKey) || "1";
+        }
+
+        function closeTableModal() {
+            document.getElementById('tableModalBackdrop').classList.remove('active');
+            document.getElementById('tableModal').classList.remove('active');
+        }
+
+        function saveNewTable() {
+            const val = document.getElementById('newTableInput').value;
+            if (val) {
+                localStorage.setItem(storageKey, val);
+                document.getElementById('currentTableText').innerText = val;
+                document.getElementById('sheet_table_input').value = val;
+                closeTableModal();
             }
         }
 
-        function attachTableToForm(form) {
-            const shopId = "<%= shopId %>";
-            const storageKey = `coffee_table_${shopId}`;
-            const currentTable = localStorage.getItem(storageKey) || "1";
-            const tableInput = form.querySelector('input[name="table"]');
-            if (tableInput) tableInput.value = currentTable;
+        function openOrderSheet(name, price, imgUrl) {
+            document.getElementById('sheet_item_name').value = name;
+            document.getElementById('sheet_item_price').value = price;
+            document.getElementById('sheet_title').innerText = name;
+            document.getElementById('sheet_price_text').innerText = "$" + parseFloat(price).toFixed(2);
+            document.getElementById('sheet_img').src = imgUrl;
+            document.getElementById('qty_input').value = 1;
+
+            document.getElementById('modalBackdrop').classList.add('active');
+            document.getElementById('orderBottomSheet').classList.add('active');
         }
 
-        function incrementQty(idx) {
-            const input = document.getElementById('qty_' + idx);
+        function closeOrderSheet() {
+            document.getElementById('modalBackdrop').classList.remove('active');
+            document.getElementById('orderBottomSheet').classList.remove('active');
+        }
+
+        function attachTableToForm(form) {
+            const currentTable = localStorage.getItem(storageKey) || "1";
+            document.getElementById('sheet_table_input').value = currentTable;
+        }
+
+        function incrementQty() {
+            const input = document.getElementById('qty_input');
             input.value = parseInt(input.value) + 1;
         }
 
-        function decrementQty(idx) {
-            const input = document.getElementById('qty_' + idx);
+        function decrementQty() {
+            const input = document.getElementById('qty_input');
             if (parseInt(input.value) > 1) {
                 input.value = parseInt(input.value) - 1;
             }
@@ -313,9 +358,7 @@
             timeout: 20000
         });
 
-        const shopId = "<%= shopId %>";
         socket.emit('join_shop', shopId);
-
         socket.on('menu_updated', () => { window.location.reload(); });
         socket.on('reconnect', () => { window.location.reload(); });
     </script>
