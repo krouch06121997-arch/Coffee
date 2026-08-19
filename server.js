@@ -101,24 +101,32 @@ app.get('/:shopId/admin', requireAdminApp, (req, res) => {
     res.render('admin', { shopId, menuItems, salesItems, grandTotal });
 });
 
-// ២. បន្ថែម Menu
+// ២. បន្ថែម Menu (ជាមួយនឹង Socket Event 'menu_updated')
 app.post('/:shopId/admin/menu/add', requireAdminApp, (req, res) => {
     const { shopId } = req.params;
     const { name, price } = req.body;
     db.run("INSERT INTO menu (shop_id, name, price) VALUES (?, ?, ?)", [shopId, name || '', parseFloat(price) || 0]);
     saveDB();
+
+    // ប្រាប់អេក្រង់ភ្ញៀវឱ្យ Auto Refresh
+    io.to(shopId).emit('menu_updated');
+
     res.redirect(`/${shopId}/admin`);
 });
 
-// ៣. លុប Menu
+// ៣. លុប Menu (ជាមួយនឹង Socket Event 'menu_updated')
 app.post('/:shopId/admin/menu/delete/:id', requireAdminApp, (req, res) => {
     const { shopId, id } = req.params;
     db.run("DELETE FROM menu WHERE id = ? AND shop_id = ?", [id, shopId]);
     saveDB();
+
+    // ប្រាប់អេក្រង់ភ្ញៀវឱ្យ Auto Refresh
+    io.to(shopId).emit('menu_updated');
+
     res.redirect(`/${shopId}/admin`);
 });
 
-// ៤. ផ្លាស់ប្តូរ Status Order (ឆុងរួចរាល់)
+// ៤. ផ្លាស់ប្តូរ Status Order
 app.post('/:shopId/admin/order-status', requireAdminApp, (req, res) => {
     const { shopId } = req.params;
     const { order_id, status } = req.body;
@@ -129,7 +137,7 @@ app.post('/:shopId/admin/order-status', requireAdminApp, (req, res) => {
     res.redirect(`/${shopId}/admin`);
 });
 
-// ៥. ទំព័រ Menu សម្រាប់ Customer (ស្កែន QR) -> Render ទៅ menu.ejs
+// ៥. ទំព័រ Menu សម្រាប់ Customer ( Render ទៅ menu.ejs)
 app.get('/:shopId', (req, res) => {
     const { shopId } = req.params;
     const tableNum = req.query.table || '1';
@@ -140,7 +148,7 @@ app.get('/:shopId', (req, res) => {
     while (menuStmt.step()) itemsList.push(menuStmt.getAsObject());
     menuStmt.free();
 
-    // ផ្ញើទាំង items និង menuItems ដើម្បីឆ្លើយតបត្រូវតាមកូដក្នុង menu.ejs
+    // ផ្ញើទាំង items និង menuItems ដើម្បីការពារកំហុស
     res.render('menu', { 
         shopId, 
         tableNum, 
@@ -149,25 +157,24 @@ app.get('/:shopId', (req, res) => {
     });
 });
 
-// ៦. Customer ចុច Order (ការពារតម្លៃ undefined និងបាញ់ Socket ទៅ Admin)
+// ៦. Customer ចុច Order
 app.post('/:shopId/order', (req, res) => {
     const { shopId } = req.params;
-    const { table_num, item_name, quantity, sugar, note } = req.body;
+    const { table, table_num, item_name, qty, quantity, sugar, note } = req.body;
 
-    // កំណត់តម្លៃសុវត្ថិភាព ការពារ Error: tried to bind a value of an unknown type
-    const safeTableNum = table_num ? String(table_num) : '1';
+    const safeTableNum = table || table_num || '1';
     const safeItemName = item_name ? String(item_name) : 'ភេសជ្ជៈ';
-    const safeQuantity = parseInt(quantity) || 1;
+    const safeQuantity = parseInt(qty || quantity) || 1;
     const safeSugar = sugar ? String(sugar) : '100%';
     const safeNote = note ? String(note) : '';
 
     db.run(
         "INSERT INTO sales (shop_id, table_num, item_name, quantity, sugar, note, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')",
-        [shopId, safeTableNum, safeItemName, safeQuantity, safeSugar, safeNote]
+        [shopId, String(safeTableNum), safeItemName, safeQuantity, safeSugar, safeNote]
     );
     saveDB();
 
-    // បាញ់ Socket ទៅកាន់ Admin Dashboard ឱ្យ Auto Refresh
+    // បាញ់ Socket ទៅកាន់ Admin Dashboard ឱ្យទទួលបាន Order ថ្មី
     io.to(shopId).emit('new_order');
 
     res.redirect(`/${shopId}?table=${safeTableNum}`);
@@ -179,3 +186,4 @@ initDB().then(() => {
         console.log(`☕ Coffee POS Server Running on Port ${PORT}`);
     });
 });
+
