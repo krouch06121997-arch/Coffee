@@ -22,7 +22,7 @@ function requireAdminApp(req, res, next) {
     if (userAgent.includes('Capacitor') || userAgent.includes('wv')) {
         return next();
     }
-    return res.status(403).send(' Access Denied: Admin access is restricted to the App.');
+    return res.status(403).send('🔒 Access Denied: Admin access is restricted to the App.');
 }
 
 let db;
@@ -74,7 +74,7 @@ io.on('connection', (socket) => {
 
 // ---------------- ROUTES ----------------
 
-// ១. Route សម្រាប់ Admin Dashboard (ការពារដោយ requireAdminApp)
+// ១. Route សម្រាប់ Admin Dashboard
 app.get('/:shopId/admin', requireAdminApp, (req, res) => {
     const { shopId } = req.params;
 
@@ -105,7 +105,7 @@ app.get('/:shopId/admin', requireAdminApp, (req, res) => {
 app.post('/:shopId/admin/menu/add', requireAdminApp, (req, res) => {
     const { shopId } = req.params;
     const { name, price } = req.body;
-    db.run("INSERT INTO menu (shop_id, name, price) VALUES (?, ?, ?)", [shopId, name, parseFloat(price)]);
+    db.run("INSERT INTO menu (shop_id, name, price) VALUES (?, ?, ?)", [shopId, name || '', parseFloat(price) || 0]);
     saveDB();
     res.redirect(`/${shopId}/admin`);
 });
@@ -122,7 +122,7 @@ app.post('/:shopId/admin/menu/delete/:id', requireAdminApp, (req, res) => {
 app.post('/:shopId/admin/order-status', requireAdminApp, (req, res) => {
     const { shopId } = req.params;
     const { order_id, status } = req.body;
-    db.run("UPDATE sales SET status = ? WHERE id = ?", [status, order_id]);
+    db.run("UPDATE sales SET status = ? WHERE id = ?", [status || 'ready', order_id]);
     saveDB();
     
     io.to(shopId).emit('customer_confirmed', { orderId: order_id });
@@ -143,21 +143,28 @@ app.get('/:shopId', (req, res) => {
     res.render('index', { shopId, tableNum, menuItems });
 });
 
-// ៦. Customer ចុច Order (បាញ់ Socket ទៅកាន់ Admin)
+// ៦. Customer ចុច Order (ការពារតម្លៃ undefined និងបាញ់ Socket ទៅ Admin)
 app.post('/:shopId/order', (req, res) => {
     const { shopId } = req.params;
     const { table_num, item_name, quantity, sugar, note } = req.body;
 
+    // កំណត់តម្លៃសុវត្ថិភាព ការពារ Error: tried to bind a value of an unknown type
+    const safeTableNum = table_num ? String(table_num) : '1';
+    const safeItemName = item_name ? String(item_name) : 'ភេសជ្ជៈ';
+    const safeQuantity = parseInt(quantity) || 1;
+    const safeSugar = sugar ? String(sugar) : '100%';
+    const safeNote = note ? String(note) : '';
+
     db.run(
         "INSERT INTO sales (shop_id, table_num, item_name, quantity, sugar, note, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')",
-        [shopId, table_num, item_name, parseInt(quantity), sugar, note]
+        [shopId, safeTableNum, safeItemName, safeQuantity, safeSugar, safeNote]
     );
     saveDB();
 
-    // 🔴 បាញ់សញ្ញាទៅ Admin ឱ្យ Auto Reload
+    // 🔴 បាញ់ Socket ទៅកាន់ Admin Dashboard ឱ្យ Auto Refresh
     io.to(shopId).emit('new_order');
 
-    res.redirect(`/${shopId}?table=${table_num}`);
+    res.redirect(`/${shopId}?table=${safeTableNum}`);
 });
 
 initDB().then(() => {
@@ -166,3 +173,4 @@ initDB().then(() => {
         console.log(`☕ Coffee POS Server Running on Port ${PORT}`);
     });
 });
+
