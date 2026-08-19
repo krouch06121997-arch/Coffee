@@ -274,6 +274,10 @@
                 <span>📊</span>
                 <span>បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ</span>
             </div>
+            <div class="drawer-nav-item" id="navHistoryBtn" onclick="switchSection('history')">
+                <span>📂</span>
+                <span>ប្រវត្តិលក់ (Sales History)</span>
+            </div>
             <div class="drawer-nav-item" id="navMenuBtn" onclick="switchSection('menu')">
                 <span>☕</span>
                 <span>គ្រប់គ្រង Menu ហាង</span>
@@ -285,7 +289,7 @@
         </div>
 
         <div class="p-3 border-top border-secondary border-opacity-25">
-            <small class="text-white-50 d-block text-center">Coffee POS System v2.0</small>
+            <small class="text-white-50 d-block text-center">Coffee POS System v2.1</small>
         </div>
     </div>
 
@@ -296,7 +300,13 @@
             <div class="admin-card p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-bold text-dark m-0">📋 កុម្ម៉ង់ Real-time</h5>
-                    <span class="badge bg-primary rounded-pill"><%= salesItems.length %> កុម្ម៉ង់</span>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-primary rounded-pill d-flex align-items-center"><%= salesItems.length %> កុម្ម៉ង់</span>
+                        <!-- ប៊ូតុងបិទវេន (Close Shift) -->
+                        <form action="/<%= shopId %>/admin/close-shift" method="POST" class="m-0" onsubmit="return confirm('តើអ្នកចង់បិទវេន និងប្តូរចូលថ្ងៃថ្មីមែនទេ? ទិន្នន័យថ្ងៃនេះនឹងត្រូវរក្សាទុកក្នុងប្រវត្តិលក់។')">
+                            <button type="submit" class="btn btn-sm btn-danger fw-bold rounded-pill px-3">🔄 បិទវេន / ថ្ងៃថ្មី</button>
+                        </form>
+                    </div>
                 </div>
 
                 <div class="table-responsive">
@@ -352,7 +362,50 @@
             </div>
         </div>
 
-        <!-- SECTION 2: គ្រប់គ្រង Menu -->
+        <!-- SECTION 2: ប្រវត្តិលក់ (Sales History) -->
+        <div id="historySection" class="tab-content-section">
+            <div class="admin-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark m-0">📂 ប្រវត្តិការលក់កន្លងមក</h5>
+                    <span class="badge bg-secondary rounded-pill"><%= historyItems.length %> កំណត់ត្រា</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle mb-0">
+                        <thead>
+                            <tr class="text-secondary border-bottom">
+                                <th>កាលបរិច្ឆេទ</th>
+                                <th>តុ</th>
+                                <th>ទំនិញ</th>
+                                <th>ចំនួន</th>
+                                <th>តម្លៃសរុប</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (historyItems.length === 0) { %>
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <div class="fs-2 mb-1">📜</div>
+                                        មិនទាន់មានប្រវត្តិលក់កន្លងមកនៅឡើយទេ
+                                    </td>
+                                </tr>
+                            <% } %>
+                            <% historyItems.forEach(h => { %>
+                            <tr class="border-bottom">
+                                <td><span class="badge bg-light text-dark border px-2 py-1"><%= h.shift_date %></span></td>
+                                <td><span class="badge bg-dark rounded-3 px-2 py-1">តុ <%= h.table_num %></span></td>
+                                <td class="fw-bold text-dark"><%= h.item_name %></td>
+                                <td class="fw-medium"><%= h.quantity %> <small class="text-secondary">(ស្ករ <%= h.sugar %>)</small></td>
+                                <td class="text-success fw-bold">$<%= h.total_price.toFixed(2) %></td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: គ្រប់គ្រង Menu -->
         <div id="menuSection" class="tab-content-section">
             <div class="admin-card p-4">
                 <h5 class="fw-bold mb-3 text-dark">➕ បន្ថែម Menu ថ្មី</h5>
@@ -399,7 +452,7 @@
             </div>
         </div>
 
-        <!-- SECTION 3: ទាញយក QR Code តុ -->
+        <!-- SECTION 4: ទាញយក QR Code តុ -->
         <div id="qrSection" class="tab-content-section">
             <div class="admin-card p-4 text-center">
                 <h5 class="fw-bold mb-2 text-dark">📱 QR Code សម្រាប់ហាង (Scan ចូលគ្រប់តុ)</h5>
@@ -442,19 +495,23 @@
             saveTabState(section);
 
             const ordersSec = document.getElementById('ordersSection');
+            const historySec = document.getElementById('historySection');
             const menuSec = document.getElementById('menuSection');
             const qrSec = document.getElementById('qrSection');
             
             const navOrdersBtn = document.getElementById('navOrdersBtn');
+            const navHistoryBtn = document.getElementById('navHistoryBtn');
             const navMenuBtn = document.getElementById('navMenuBtn');
             const navQrBtn = document.getElementById('navQrBtn');
             const headerTitle = document.getElementById('headerTitle');
 
             ordersSec.classList.remove('active');
+            historySec.classList.remove('active');
             menuSec.classList.remove('active');
             qrSec.classList.remove('active');
 
             navOrdersBtn.classList.remove('active');
+            navHistoryBtn.classList.remove('active');
             navMenuBtn.classList.remove('active');
             navQrBtn.classList.remove('active');
 
@@ -462,6 +519,10 @@
                 ordersSec.classList.add('active');
                 navOrdersBtn.classList.add('active');
                 headerTitle.innerText = "📊 បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ";
+            } else if (section === 'history') {
+                historySec.classList.add('active');
+                navHistoryBtn.classList.add('active');
+                headerTitle.innerText = "📂 ប្រវត្តិការលក់កន្លងមក";
             } else if (section === 'menu') {
                 menuSec.classList.add('active');
                 navMenuBtn.classList.add('active');
@@ -478,7 +539,6 @@
             switchSection(savedTab);
         });
 
-        // បានកែសម្រួល Socket ឱ្យមាន Auto-Reconnect យ៉ាងរឹងមាំសម្រាប់ Admin
         const socket = io({
             reconnection: true,
             reconnectionAttempts: Infinity,
@@ -492,11 +552,7 @@
         socket.on('new_order', () => { window.location.reload(); });
         socket.on('customer_confirmed', () => { window.location.reload(); });
         socket.on('menu_updated', () => { window.location.reload(); });
-
-        // បង្ខំឱ្យ Reload ទំព័រដើម្បីទាញយកទិន្នន័យចុងក្រោយពេលតភ្ជាប់បានវិញ
-        socket.on('reconnect', () => {
-            window.location.reload();
-        });
+        socket.on('reconnect', () => { window.location.reload(); });
     </script>
 </body>
 </html>
