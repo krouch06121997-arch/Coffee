@@ -225,15 +225,17 @@
         .qr-card {
             background: #FFFFFF;
             border-radius: 16px;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             border: 1px solid #E5E7EB;
+            max-width: 320px;
+            margin: 0 auto;
         }
 
         .qr-card img {
             width: 100%;
-            max-width: 180px;
+            max-width: 220px;
             border-radius: 8px;
         }
 
@@ -397,22 +399,16 @@
             </div>
         </div>
 
-        <!-- SECTION 3: ទាញយក QR Code តុ -->
+        <!-- SECTION 3: ទាញយក QR Code តុ (Master QR Code តែមួយ) -->
         <div id="qrSection" class="tab-content-section">
-            <div class="admin-card p-4">
-                <h5 class="fw-bold mb-2 text-dark">📱 QR Code សម្រាប់តុទាំង ១០</h5>
-                <p class="text-muted small mb-4">អ្នកអាចទាញយក (Download) រូបភាព QR Code ទាំងនេះទៅ Print បិទលើតុក្នុងហាងបាន៖</p>
+            <div class="admin-card p-4 text-center">
+                <h5 class="fw-bold mb-2 text-dark">📱 QR Code សម្រាប់ហាង (Scan ចូលគ្រប់តុ)</h5>
+                <p class="text-muted small mb-4">លោកអ្នកគ្រាន់តែ Print រូបភាព QR Code នេះតែមួយសន្លឹក រួចយកទៅបិទលើគ្រប់តុទាំងអស់ក្នុងហាង។ ភ្ញៀវ Scan រួចអាចជ្រើសរើសលេខតុដោយខ្លួនឯង:</p>
                 
-                <div class="row g-3">
-                    <% for(let i = 1; i <= 10; i++) { %>
-                        <div class="col-6 col-md-4 col-lg-3">
-                            <div class="qr-card">
-                                <h6 class="fw-bold text-dark mb-2">តុទី <%= i %></h6>
-                                <img src="/qrcodes/table-<%= i %>.png" alt="QR Table <%= i %>" class="img-fluid mb-2">
-                                <a href="/qrcodes/table-<%= i %>.png" download="Table-<%= i %>-QR.png" class="btn btn-sm btn-outline-dark w-100 rounded-3">📥 Download</a>
-                            </div>
-                        </div>
-                    <% } %>
+                <div class="qr-card">
+                    <h6 class="fw-bold text-dark mb-3">☕ Master QR Code</h6>
+                    <img src="/qrcodes/master.png" alt="Master QR Code" class="img-fluid mb-3">
+                    <a href="/qrcodes/master.png" download="Shop-Master-QR.png" class="btn btn-sm btn-dark w-100 rounded-3 py-2 fw-bold">📥 Download QR Code នេះ</a>
                 </div>
             </div>
         </div>
