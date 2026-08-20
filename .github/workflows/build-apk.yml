@@ -27,11 +27,6 @@ jobs:
       - name: Validate Gradle Wrapper
         uses: gradle/actions/wrapper-validation@v3
 
-      - name: Setup Gradle Cache
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          cache-key-prefix: 'new-cache-java17'
-
       - name: Install Capacitor CLI
         run: |
           npm install --legacy-peer-deps
