@@ -1,4 +1,4 @@
-name: Build Android APK
+Name: Build Android APK
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
           node-version: '18'
 
       - name: Install Dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Setup Java JDK
         uses: actions/setup-java@v3
