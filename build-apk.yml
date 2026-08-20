@@ -1,4 +1,4 @@
-Name: Build Android APK
+name: Build Android APK
 
 on:
   push:
@@ -8,40 +8,44 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      - name: Install Dependencies
-        run: npm install --legacy-peer-deps
-
       - name: Setup Java JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: '17'
+          distribution: 'temurin'
+          java-version: '21'
 
-      # ជំហានទី ១: ធ្វើការ Sync កូដ Config ថ្មីចូល Android
-      - name: Sync Capacitor
+      - name: Install Capacitor CLI
         run: |
-          npx cap copy android
-          npx cap sync android
+          npm install --legacy-peer-deps
+          npm install @capacitor/core@5 @capacitor/cli@5 @capacitor/android@5 --legacy-peer-deps
 
-      # ជំហានទី ២: ធ្វើការ Build APK ជាក់ស្តែង
+      - name: Initialize Capacitor
+        run: |
+          npx cap init "Coffee POS" "com.coffeepos.app" --web-dir public
+
+      - name: Sync Android Platform
+        run: npx cap sync android
+
       - name: Build Android APK
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs='-Xmx2048m -XX:MaxMetaspaceSize=512m'"
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace
 
-      # ជំហានទី ៣: ទុក File APK ឱ្យយើងទាញយក
-      - name: Upload APK
-        uses: actions/upload-artifact@v3
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: app-debug
+          name: Coffee-POS-App
           path: android/app/build/outputs/apk/debug/app-debug.apk
