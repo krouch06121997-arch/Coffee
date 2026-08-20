@@ -157,7 +157,6 @@ app.get('/:shopId/admin', requireAdminApp, async (req, res) => {
     }
     salesStmt.free();
 
-    // ទាញយកប្រវត្តិលក់ (Sales History) មកបង្ហាញ
     const historyStmt = db.prepare("SELECT * FROM sales_history WHERE shop_id = ? ORDER BY id DESC");
     historyStmt.bind([shopId]);
     const historyItems = [];
@@ -167,12 +166,10 @@ app.get('/:shopId/admin', requireAdminApp, async (req, res) => {
     res.render('admin', { shopId, menuItems, salesItems, grandTotal, historyItems });
 });
 
-// បន្ថែម Route សម្រាប់បិទវេន (Close Shift / Reset)
 app.post('/:shopId/admin/close-shift', requireAdminApp, (req, res) => {
     const { shopId } = req.params;
     const shiftDate = new Date().toLocaleDateString();
 
-    // ១. ទាញយកទិន្នន័យពី sales មកသိမ်းចូល sales_history
     const salesStmt = db.prepare("SELECT * FROM sales WHERE shop_id = ?");
     salesStmt.bind([shopId]);
     const currentSales = [];
@@ -196,7 +193,6 @@ app.post('/:shopId/admin/close-shift', requireAdminApp, (req, res) => {
         );
     });
 
-    // ២. លុបទិន្នន័យចាស់ចេញពី table sales ដើម្បីឱ្យថ្ងៃថ្មីចាប់ផ្តើមពីសូន្យ
     db.run("DELETE FROM sales WHERE shop_id = ?", [shopId]);
     saveDB();
 
@@ -289,7 +285,10 @@ app.post('/:shopId/order', (req, res) => {
     );
     saveDB();
 
+    // បន្ថែម Socket Emit ជូនដំណឹងទៅកាន់ Admin App ឱ្យលេងសម្លេង និងដឹងថាមាន Order ចូល
     io.to(shopId).emit('new_order');
+    io.to(shopId).emit('new_order_alert', { table: safeTableNum, item: safeItemName });
+
     res.redirect(`/${shopId}?table=${safeTableNum}`);
 });
 
