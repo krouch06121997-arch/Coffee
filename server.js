@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const QRCode = require('qrcode');
+const admin = require('firebase-admin'); // បន្ថែមសម្រាប់ Firebase
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +16,17 @@ const io = new Server(server, {
     pingTimeout: 60000,
     pingInterval: 10000 
 });
+
+// កូដភ្ជាប់ Firebase Admin SDK (ត្រូវប្រាកដថាមានហ្វាល serviceAccountKey.json ក្នុងថតតែមួយ)
+try {
+    const serviceAccount = require('./serviceAccountKey.json');
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+    });
+    console.log("🔥 Firebase Admin Initialized.");
+} catch (e) {
+    console.log("⚠️ Firebase serviceAccountKey.json not found or invalid.");
+}
 
 const uploadDir = path.join(__dirname, 'public/uploads');
 const qrDir = path.join(__dirname, 'public/qrcodes');
@@ -269,9 +281,9 @@ app.get('/:shopId', (req, res) => {
     });
 });
 
-app.post('/:shopId/order', (req, res) => {
+app.post('/:shopId/order', async (req, res) => {
     const { shopId } = req.params;
-    const { table, table_num, item_name, qty, quantity, sugar, note } = req.body;
+    const { table, table_num, item_name, qty, quantity, sugar, note, fcm_token } = req.body;
 
     const safeTableNum = table || table_num || '1';
     const safeItemName = item_name ? String(item_name) : 'ភេសជ្ជៈ';
@@ -285,9 +297,29 @@ app.post('/:shopId/order', (req, res) => {
     );
     saveDB();
 
-    // បន្ថែម Socket Emit ជូនដំណឹងទៅកាន់ Admin App ឱ្យលេងសម្លេង និងដឹងថាមាន Order ចូល
+    // បន្ថែម Socket Emit ជូនដំណឹងទៅកាន់ Admin App
     io.to(shopId).emit('new_order');
     io.to(shopId).emit('new_order_alert', { table: safeTableNum, item: safeItemName });
+
+    // 🚀 បន្ថែម Code ផ្ញើ Firebase Push Notification ទៅកាន់ Admin App ដោយស្វ័យប្រវត្តិ
+    // (ប្រសិនបើ Frontend បញ្ជូន fcm_token មកជាមួយ ឬអ្នកអាចកែដាក់ Token ផ្ទាល់របស់អ្នកទីនេះបាន)
+    const targetToken = fcm_token || 'YOUR_ADMIN_DEVICE_FCM_TOKEN'; 
+    if (targetToken && targetToken !== 'YOUR_ADMIN_DEVICE_FCM_TOKEN') {
+        const message = {
+            notification: {
+                title: '☕ មានកុម្ម៉ង់កាហ្វេថ្មី!',
+                body: `តុទី ${safeTableNum} កុម្ម៉ង់ ${safeItemName} (${safeQuantity} កែវ)`
+            },
+            token: targetToken
+        };
+
+        try {
+            await admin.messaging().send(message);
+            console.log('📱 Push Notification sent successfully!');
+        } catch (error) {
+            console.error('❌ Error sending push notification:', error);
+        }
+    }
 
     res.redirect(`/${shopId}?table=${safeTableNum}`);
 });
@@ -298,4 +330,3 @@ initDB().then(() => {
         console.log(`☕ Coffee POS Server Running on Port ${PORT}`);
     });
 });
-
