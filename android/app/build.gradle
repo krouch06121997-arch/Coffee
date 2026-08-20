@@ -1,4 +1,4 @@
-appply plugin: 'com.android.application'
+apply plugin: 'com.android.application'
 
 android {
     namespace = "com.coffee.pos"
