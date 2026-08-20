@@ -28,10 +28,10 @@
             }
             await PushNotifications.register();
 
-            // ពេលទទួលបាន Token (សម្រាប់យកไปផ្ញើឱ្យ Backend သိ)
+            // ពេលទទួលបាន Token (បានបន្ថែម prompt ដើម្បីឱ្យងាយ Copy)
             PushNotifications.addListener('registration', (token) => {
                 console.log('Push registration success, token: ' + token.value);
-                // អ្នកអាចបញ្ជូន token នេះទៅកាន់ Server របស់អ្នកនៅទីនេះបាន
+                prompt("នេះជា FCM Token របស់អ្នក សូម Copy ទុក:", token.value);
             });
 
             // ពេលមាន Notification ចូលមកពេលបើក App
