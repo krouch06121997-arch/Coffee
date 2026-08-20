@@ -28,10 +28,18 @@
             }
             await PushNotifications.register();
 
-            // ពេលទទួលបាន Token (បានបន្ថែម prompt ដើម្បីឱ្យងាយ Copy)
+            // ពេលទទួលបាន Token (កែសម្រួលដើម្បីចាប់តម្លៃឱ្យបានត្រឹមត្រូវ)
             PushNotifications.addListener('registration', (token) => {
-                console.log('Push registration success, token: ' + token.value);
-                prompt("នេះជា FCM Token របស់អ្នក សូម Copy ទុក:", token.value);
+                const tokenValue = token.value || token.toString();
+                console.log('Push registration success, token: ', token);
+                
+                // បង្ហាញតម្លៃ Token ក្នុង Prompt
+                prompt("នេះជា FCM Token របស់អ្នក សូម Copy ទុក:", JSON.stringify(token));
+            });
+
+            // ករណីមានកំហុសក្នុងការចុះឈ្មោះ
+            PushNotifications.addListener('registrationError', (error) => {
+                alert('Error on registration: ' + JSON.stringify(error));
             });
 
             // ពេលមាន Notification ចូលមកពេលបើក App
