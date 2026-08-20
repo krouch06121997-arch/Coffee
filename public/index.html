@@ -12,5 +12,35 @@
 </head>
 <body>
     <iframe src="http://localhost:8000/shop1/admin"></iframe>
+
+    <!-- កូដ Capacitor Push Notifications -->
+    <script type="module">
+        import { PushNotifications } from 'https://cdn.jsdelivr.net/npm/@capacitor/push-notifications@5.0.0/+esm';
+
+        async function initPush() {
+            let permStatus = await PushNotifications.checkPermissions();
+            if (permStatus.receive === 'prompt') {
+                permStatus = await PushNotifications.requestPermissions();
+            }
+            if (permStatus.receive !== 'granted') {
+                console.log('User denied permissions!');
+                return;
+            }
+            await PushNotifications.register();
+
+            // ពេលទទួលបាន Token (សម្រាប់យកไปផ្ញើឱ្យ Backend သိ)
+            PushNotifications.addListener('registration', (token) => {
+                console.log('Push registration success, token: ' + token.value);
+                // អ្នកអាចបញ្ជូន token នេះទៅកាន់ Server របស់អ្នកនៅទីនេះបាន
+            });
+
+            // ពេលមាន Notification ចូលមកពេលបើក App
+            PushNotifications.addListener('pushNotificationReceived', (notification) => {
+                alert('កុម្ម៉ង់កាហ្វេថ្មី: ' + (notification.body || notification.title));
+            });
+        }
+
+        initPush();
+    </script>
 </body>
 </html>
