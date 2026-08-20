@@ -24,6 +24,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Validate Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v3
+
+      - name: Setup Gradle Cache
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Install Capacitor CLI
         run: |
           npm install --legacy-peer-deps
