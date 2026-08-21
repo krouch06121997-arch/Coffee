@@ -342,20 +342,16 @@
                                 <td class="fw-medium text-dark"><%= s.item_name %></td>
                                 <td class="text-secondary"><%= s.quantity %> <small>(ស្ករ <%= s.sugar %>)</small></td>
                                 <td class="text-muted"><small><%= s.note || '-' %></small></td>
-                                <td>
+                                <td id="status-cell-<%= s.id %>">
                                     <% if(s.status === 'pending') { %>
                                         <span class="status-badge status-pending">កំពុងឆុង</span>
                                     <% } else { %>
                                         <span class="status-badge status-ready">រួចរាល់</span>
                                     <% } %>
                                 </td>
-                                <td class="text-end">
+                                <td class="text-end" id="action-cell-<%= s.id %>">
                                     <% if(s.status === 'pending') { %>
-                                        <form action="/<%= shopId %>/admin/order-status" method="POST" class="d-inline">
-                                            <input type="hidden" name="order_id" value="<%= s.id %>">
-                                            <input type="hidden" name="status" value="ready">
-                                            <button type="submit" class="btn btn-ios-action">ឆុងរួច</button>
-                                        </form>
+                                        <button type="button" class="btn btn-ios-action" onclick="markAsReady('<%= s.id %>', '<%= shopId %>')">ឆុងរួច</button>
                                     <% } else { %>
                                         <span class="text-muted small">-</span>
                                     <% } %>
@@ -543,6 +539,39 @@
             switchSection(savedTab);
         });
 
+        // មុខងារ AJAX សម្រាប់ចុចប៊ូតុង "ឆុងរួច" ដោយមិនបាច់ Refresh ញាក់អេក្រង់
+        function markAsReady(orderId, currentShopId) {
+            const actionCell = document.getElementById('action-cell-' + orderId);
+            const statusCell = document.getElementById('status-cell-' + orderId);
+
+            actionCell.innerHTML = '<small class="text-muted">កំពុងធ្វើ...</small>';
+
+            fetch(`/${currentShopId}/admin/order-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    order_id: orderId,
+                    status: 'ready'
+                })
+            })
+            .then(res => {
+                if (res.ok) {
+                    statusCell.innerHTML = '<span class="status-badge status-ready">រួចរាល់</span>';
+                    actionCell.innerHTML = '<span class="text-muted small">-</span>';
+                } else {
+                    alert("មានបញ្ហាក្នុងการរក្សាទុក!");
+                    actionCell.innerHTML = `<button type="button" class="btn btn-ios-action" onclick="markAsReady('${orderId}', '${currentShopId}')">ឆុងរួច</button>`;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Fail to connect server!");
+                actionCell.innerHTML = `<button type="button" class="btn btn-ios-action" onclick="markAsReady('${orderId}', '${currentShopId}')">ឆុងរួច</button>`;
+            });
+        }
+
         const socket = io({
             reconnection: true,
             reconnectionAttempts: Infinity,
@@ -553,7 +582,12 @@
         const shopId = "<%= shopId %>";
         socket.emit('join_shop', shopId);
 
-        socket.on('new_order', () => { window.location.reload(); });
+        socket.on('new_order', () => { 
+            // ឱ្យទំព័រមេបន្លឺសំឡេងរោទ៍ដោយមិនបាច់ Refresh ញាក់អេក្រង់
+            window.parent.postMessage('NEW_ORDER', '*');
+            // បើចង់ឱ្យទិន្នន័យឡើងមកស្វ័យប្រវត្តិដោយមិនញាក់ខ្លាំង អាចទុក window.location.reload() ឬប្រើ AJAX ជំនួស
+            window.location.reload(); 
+        });
         socket.on('customer_confirmed', () => { window.location.reload(); });
         socket.on('menu_updated', () => { window.location.reload(); });
         socket.on('reconnect', () => { window.location.reload(); });
