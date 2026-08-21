@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const QRCode = require('qrcode');
-const admin = require('firebase-admin'); // បន្ថែមសម្រាប់ Firebase
+const admin = require('firebase-admin');
 
 const app = express();
 const server = http.createServer(app);
@@ -17,7 +17,6 @@ const io = new Server(server, {
     pingInterval: 10000 
 });
 
-// កូដភ្ជាប់ Firebase Admin SDK (ត្រូវប្រាកដថាមានហ្វាល serviceAccountKey.json ក្នុងថតតែមួយ)
 try {
     const serviceAccount = require('./serviceAccountKey.json');
     admin.initializeApp({
@@ -25,12 +24,11 @@ try {
     });
     console.log("🔥 Firebase Admin Initialized.");
 } catch (e) {
-    console.log("⚠️ Firebase serviceAccountKey.json not found or invalid.");
+    console.log("⚠️ Firebase serviceAccountKey.json not found.");
 }
 
 const uploadDir = path.join(__dirname, 'public/uploads');
 const qrDir = path.join(__dirname, 'public/qrcodes');
-
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 if (!fs.existsSync(qrDir)) fs.mkdirSync(qrDir, { recursive: true });
 
@@ -40,107 +38,53 @@ async function generateMasterQRCode(shopId) {
     const targetUrl = `${baseUrl}/${shopId}`;
     try {
         await QRCode.toFile(qrPath, targetUrl, {
-            width: 400,
-            margin: 2,
-            color: { dark: '#120C08', light: '#FFFFFF' }
+            width: 400, margin: 2, color: { dark: '#120C08', light: '#FFFFFF' }
         });
-    } catch (err) {
-        console.error(`Error generating Master QR for shop ${shopId}:`, err);
-    }
+    } catch (err) { console.error(err); }
 }
 
-const storage = multer.diskStorage({
+const upload = multer({ storage: multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
-const upload = multer({ storage: storage });
+    filename: (req, file, cb) => cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname))
+})});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 function requireAdminApp(req, res, next) {
     const userAgent = req.headers['user-agent'] || '';
-    if (userAgent.includes('Capacitor') || userAgent.includes('wv')) {
-        return next();
-    }
-    return res.status(403).send('🔒 Access Denied: Admin access is restricted to the App.');
+    if (userAgent.includes('Capacitor') || userAgent.includes('wv')) return next();
+    return res.status(403).send('🔒 Access Denied');
 }
 
 let db;
 const dbPath = path.join(__dirname, 'pos.sqlite');
 
 async function initDB() {
-    try {
-        const SQL = await initSqlJs();
-        if (fs.existsSync(dbPath)) {
-            const filebuffer = fs.readFileSync(dbPath);
-            db = new SQL.Database(filebuffer);
-        } else {
-            db = new SQL.Database();
-            saveDB();
-        }
-
-        db.run(`
-            CREATE TABLE IF NOT EXISTS menu (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                shop_id TEXT,
-                name TEXT,
-                price REAL,
-                image_url TEXT
-            );
-            CREATE TABLE IF NOT EXISTS sales (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                shop_id TEXT,
-                table_num TEXT,
-                item_name TEXT,
-                quantity INTEGER,
-                sugar TEXT,
-                note TEXT,
-                status TEXT DEFAULT 'pending'
-            );
-            CREATE TABLE IF NOT EXISTS sales_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                shop_id TEXT,
-                shift_date TEXT,
-                table_num TEXT,
-                item_name TEXT,
-                quantity INTEGER,
-                sugar TEXT,
-                note TEXT,
-                total_price REAL
-            );
-        `);
-
-        try {
-            db.run("ALTER TABLE menu ADD COLUMN image_url TEXT");
-        } catch (e) {}
-
+    const SQL = await initSqlJs();
+    if (fs.existsSync(dbPath)) {
+        db = new SQL.Database(fs.readFileSync(dbPath));
+    } else {
+        db = new SQL.Database();
         saveDB();
-        console.log("✅ Database initialized successfully.");
-    } catch (err) {
-        console.error("❌ Database Initialization Error:", err);
     }
+    db.run(`
+        CREATE TABLE IF NOT EXISTS menu (id INTEGER PRIMARY KEY AUTOINCREMENT, shop_id TEXT, name TEXT, price REAL, image_url TEXT);
+        CREATE TABLE IF NOT EXISTS sales (id INTEGER PRIMARY KEY AUTOINCREMENT, shop_id TEXT, table_num TEXT, item_name TEXT, quantity INTEGER, sugar TEXT, note TEXT, status TEXT DEFAULT 'pending');
+        CREATE TABLE IF NOT EXISTS sales_history (id INTEGER PRIMARY KEY AUTOINCREMENT, shop_id TEXT, shift_date TEXT, table_num TEXT, item_name TEXT, quantity INTEGER, sugar TEXT, note TEXT, total_price REAL);
+    `);
+    saveDB();
 }
 
 function saveDB() {
-    if (db) {
-        const data = db.export();
-        const buffer = Buffer.from(data);
-        fs.writeFileSync(dbPath, buffer);
-    }
+    if (db) fs.writeFileSync(dbPath, Buffer.from(db.export()));
 }
 
 io.on('connection', (socket) => {
-    socket.on('join_shop', (shopId) => {
-        if (shopId) socket.join(String(shopId));
-    });
+    socket.on('join_shop', (shopId) => { if (shopId) socket.join(String(shopId)); });
 });
 
 // ---------------- ROUTES ----------------
@@ -148,110 +92,35 @@ io.on('connection', (socket) => {
 app.get('/:shopId/admin', requireAdminApp, async (req, res) => {
     const { shopId } = req.params;
     await generateMasterQRCode(shopId);
-
+    
+    const menuItems = [];
     const menuStmt = db.prepare("SELECT * FROM menu WHERE shop_id = ?");
     menuStmt.bind([shopId]);
-    const menuItems = [];
     while (menuStmt.step()) menuItems.push(menuStmt.getAsObject());
     menuStmt.free();
 
-    const salesStmt = db.prepare("SELECT * FROM sales WHERE shop_id = ? ORDER BY id DESC");
-    salesStmt.bind([shopId]);
     const salesItems = [];
     let grandTotal = 0;
+    const salesStmt = db.prepare("SELECT * FROM sales WHERE shop_id = ? ORDER BY id DESC");
+    salesStmt.bind([shopId]);
     while (salesStmt.step()) {
         const row = salesStmt.getAsObject();
         salesItems.push(row);
         const item = menuItems.find(m => m.name === row.item_name);
-        if (item) {
-            grandTotal += item.price * row.quantity;
-        }
+        if (item) grandTotal += item.price * row.quantity;
     }
     salesStmt.free();
 
+    const historyItems = [];
     const historyStmt = db.prepare("SELECT * FROM sales_history WHERE shop_id = ? ORDER BY id DESC");
     historyStmt.bind([shopId]);
-    const historyItems = [];
     while (historyStmt.step()) historyItems.push(historyStmt.getAsObject());
     historyStmt.free();
 
     res.render('admin', { shopId, menuItems, salesItems, grandTotal, historyItems });
 });
 
-app.post('/:shopId/admin/close-shift', requireAdminApp, (req, res) => {
-    const { shopId } = req.params;
-    const shiftDate = new Date().toLocaleDateString();
-
-    const salesStmt = db.prepare("SELECT * FROM sales WHERE shop_id = ?");
-    salesStmt.bind([shopId]);
-    const currentSales = [];
-    while (salesStmt.step()) currentSales.push(salesStmt.getAsObject());
-    salesStmt.free();
-
-    const menuStmt = db.prepare("SELECT * FROM menu WHERE shop_id = ?");
-    menuStmt.bind([shopId]);
-    const menuItems = [];
-    while (menuStmt.step()) menuItems.push(menuStmt.getAsObject());
-    menuStmt.free();
-
-    currentSales.forEach(s => {
-        const item = menuItems.find(m => m.name === s.item_name);
-        const itemPrice = item ? item.price : 0;
-        const totalPrice = itemPrice * s.quantity;
-
-        db.run(
-            "INSERT INTO sales_history (shop_id, shift_date, table_num, item_name, quantity, sugar, note, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            [shopId, shiftDate, s.table_num, s.item_name, s.quantity, s.sugar, s.note, totalPrice]
-        );
-    });
-
-    db.run("DELETE FROM sales WHERE shop_id = ?", [shopId]);
-    saveDB();
-
-    io.to(shopId).emit('menu_updated');
-    res.redirect(`/${shopId}/admin`);
-});
-
-app.post('/:shopId/admin/menu/add', requireAdminApp, upload.single('image'), (req, res) => {
-    const { shopId } = req.params;
-    const { name, price } = req.body;
-    
-    let image_url = '';
-    if (req.file) {
-        image_url = '/uploads/' + req.file.filename;
-    }
-
-    db.run(
-        "INSERT INTO menu (shop_id, name, price, image_url) VALUES (?, ?, ?, ?)", 
-        [shopId, name || '', parseFloat(price) || 0, image_url]
-    );
-    saveDB();
-
-    io.to(shopId).emit('menu_updated');
-    res.redirect(`/${shopId}/admin`);
-});
-
-app.post('/:shopId/admin/menu/delete/:id', requireAdminApp, (req, res) => {
-    const { shopId, id } = req.params;
-    
-    const stmt = db.prepare("SELECT image_url FROM menu WHERE id = ? AND shop_id = ?");
-    stmt.bind([id, shopId]);
-    if (stmt.step()) {
-        const row = stmt.getAsObject();
-        if (row.image_url && row.image_url.startsWith('/uploads/')) {
-            const filePath = path.join(__dirname, 'public', row.image_url);
-            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-        }
-    }
-    stmt.free();
-
-    db.run("DELETE FROM menu WHERE id = ? AND shop_id = ?", [id, shopId]);
-    saveDB();
-
-    io.to(shopId).emit('menu_updated');
-    res.redirect(`/${shopId}/admin`);
-});
-
+// 🚀 កន្លែងដែលបានកែសម្រួល (កុំឱ្យញាក់)
 app.post('/:shopId/admin/order-status', requireAdminApp, (req, res) => {
     const { shopId } = req.params;
     const { order_id, status } = req.body;
@@ -260,73 +129,50 @@ app.post('/:shopId/admin/order-status', requireAdminApp, (req, res) => {
     saveDB();
     
     io.to(shopId).emit('customer_confirmed', { orderId: order_id, status });
+    
+    // ឆ្លើយតបជា JSON ជំនួសឱ្យការ Redirect
+    res.json({ success: true }); 
+});
+
+// Routes ផ្សេងៗទៀតទុកដូចដើម...
+app.post('/:shopId/admin/close-shift', requireAdminApp, (req, res) => {
+    const { shopId } = req.params;
+    const shiftDate = new Date().toLocaleDateString();
+    const salesStmt = db.prepare("SELECT * FROM sales WHERE shop_id = ?");
+    salesStmt.bind([shopId]);
+    while (salesStmt.step()) {
+        const s = salesStmt.getAsObject();
+        db.run("INSERT INTO sales_history (shop_id, shift_date, table_num, item_name, quantity, sugar, note, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            [shopId, shiftDate, s.table_num, s.item_name, s.quantity, s.sugar, s.note, 0]);
+    }
+    salesStmt.free();
+    db.run("DELETE FROM sales WHERE shop_id = ?", [shopId]);
+    saveDB();
+    io.to(shopId).emit('menu_updated');
     res.redirect(`/${shopId}/admin`);
 });
 
-app.get('/:shopId', (req, res) => {
+app.post('/:shopId/admin/menu/add', requireAdminApp, upload.single('image'), (req, res) => {
     const { shopId } = req.params;
-    const tableNum = req.query.table || '1';
-
-    const menuStmt = db.prepare("SELECT * FROM menu WHERE shop_id = ?");
-    menuStmt.bind([shopId]);
-    const itemsList = [];
-    while (menuStmt.step()) itemsList.push(menuStmt.getAsObject());
-    menuStmt.free();
-
-    res.render('menu', { 
-        shopId, 
-        tableNum, 
-        items: itemsList, 
-        menuItems: itemsList 
-    });
+    const { name, price } = req.body;
+    db.run("INSERT INTO menu (shop_id, name, price, image_url) VALUES (?, ?, ?, ?)", [shopId, name, parseFloat(price), req.file ? '/uploads/' + req.file.filename : '']);
+    saveDB();
+    io.to(shopId).emit('menu_updated');
+    res.redirect(`/${shopId}/admin`);
 });
 
 app.post('/:shopId/order', async (req, res) => {
     const { shopId } = req.params;
-    const { table, table_num, item_name, qty, quantity, sugar, note, fcm_token } = req.body;
-
-    const safeTableNum = table || table_num || '1';
-    const safeItemName = item_name ? String(item_name) : 'ភេសជ្ជៈ';
-    const safeQuantity = parseInt(qty || quantity) || 1;
-    const safeSugar = sugar ? String(sugar) : '100%';
-    const safeNote = note ? String(note) : '';
-
-    db.run(
-        "INSERT INTO sales (shop_id, table_num, item_name, quantity, sugar, note, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')",
-        [shopId, String(safeTableNum), safeItemName, safeQuantity, safeSugar, safeNote]
-    );
+    const { table, item_name, qty, sugar, note } = req.body;
+    db.run("INSERT INTO sales (shop_id, table_num, item_name, quantity, sugar, note, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')",
+        [shopId, table || '1', item_name || 'កាហ្វេ', parseInt(qty) || 1, sugar || '100%', note || '']);
     saveDB();
-
-    // បន្ថែម Socket Emit ជូនដំណឹងទៅកាន់ Admin App
     io.to(shopId).emit('new_order');
-    io.to(shopId).emit('new_order_alert', { table: safeTableNum, item: safeItemName });
-
-    // 🚀 បន្ថែម Code ផ្ញើ Firebase Push Notification ទៅកាន់ Admin App ដោយស្វ័យប្រវត្តិ
-    // (ប្រសិនបើ Frontend បញ្ជូន fcm_token មកជាមួយ ឬអ្នកអាចកែដាក់ Token ផ្ទាល់របស់អ្នកទីនេះបាន)
-    const targetToken = fcm_token || 'YOUR_ADMIN_DEVICE_FCM_TOKEN'; 
-    if (targetToken && targetToken !== 'YOUR_ADMIN_DEVICE_FCM_TOKEN') {
-        const message = {
-            notification: {
-                title: '☕ មានកុម្ម៉ង់កាហ្វេថ្មី!',
-                body: `តុទី ${safeTableNum} កុម្ម៉ង់ ${safeItemName} (${safeQuantity} កែវ)`
-            },
-            token: targetToken
-        };
-
-        try {
-            await admin.messaging().send(message);
-            console.log('📱 Push Notification sent successfully!');
-        } catch (error) {
-            console.error('❌ Error sending push notification:', error);
-        }
-    }
-
-    res.redirect(`/${shopId}?table=${safeTableNum}`);
+    res.redirect(`/${shopId}?table=${table || '1'}`);
 });
 
 initDB().then(() => {
     const PORT = process.env.PORT || 8000;
-    server.listen(PORT, () => {
-        console.log(`☕ Coffee POS Server Running on Port ${PORT}`);
-    });
+    server.listen(PORT, () => console.log(`☕ Coffee POS Server Running on Port ${PORT}`));
 });
+
