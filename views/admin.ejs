@@ -561,7 +561,7 @@
                     statusCell.innerHTML = '<span class="status-badge status-ready">រួចរាល់</span>';
                     actionCell.innerHTML = '<span class="text-muted small">-</span>';
                 } else {
-                    alert("មានបញ្ហាក្នុងการរក្សាទុក!");
+                    alert("មានបញ្ហាក្នុងការរក្សាទុក!");
                     actionCell.innerHTML = `<button type="button" class="btn btn-ios-action" onclick="markAsReady('${orderId}', '${currentShopId}')">ឆុងរួច</button>`;
                 }
             })
@@ -583,15 +583,16 @@
         socket.emit('join_shop', shopId);
 
         socket.on('new_order', () => { 
-            // ឱ្យទំព័រមេបន្លឺសំឡេងរោទ៍ដោយមិនបាច់ Refresh ញាក់អេក្រង់
             window.parent.postMessage('NEW_ORDER', '*');
-            // បើចង់ឱ្យទិន្នន័យឡើងមកស្វ័យប្រវត្តិដោយមិនញាក់ខ្លាំង អាចទុក window.location.reload() ឬប្រើ AJAX ជំនួស
+            // បើចង់ឱ្យមានកុម្ម៉ង់ថ្មីចូលមកហើយស្វ័យប្រវត្តិ update អាចទុក window.location.reload() ឬបើចង់អត់ឱ្យញាក់សោះ អាចលុបវាចេញ
             window.location.reload(); 
         });
-        socket.on('customer_confirmed', () => { window.location.reload(); });
+
+        // បានលុប window.location.reload() ចេញពីទីនេះ ដើម្បីកុំឱ្យវា Refresh ពេលចុចឆុងរួច
+        socket.on('customer_confirmed', () => {});
+        
         socket.on('menu_updated', () => { window.location.reload(); });
         socket.on('reconnect', () => { window.location.reload(); });
     </script>
 </body>
 </html>
-
