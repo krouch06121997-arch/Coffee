@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="km">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -184,8 +184,7 @@
             border-radius: 8px;
             font-weight: 600;
             font-size: 0.8rem;
-            padding: 6px 14px;
-            white-space: nowrap; /* ទប់មិនให้อក្សរបំបែកជួរ */
+            padding: 5px 12px;
             transition: all 0.15s ease;
         }
         .btn-ios-action:hover { background: var(--ios-blue); color: #fff; }
@@ -198,16 +197,14 @@
             font-weight: 600;
             font-size: 0.8rem;
             padding: 5px 10px;
-            white-space: nowrap;
         }
 
         .status-badge {
             border-radius: 6px;
-            padding: 5px 10px;
+            padding: 4px 10px;
             font-size: 0.75rem;
             font-weight: 600;
             display: inline-block;
-            white-space: nowrap;
         }
 
         .status-pending { background: #FEF3C7; color: #92400E; }
@@ -259,7 +256,7 @@
             <button class="menu-toggle-btn" id="openDrawerBtn">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
-            <h6 class="fw-semibold text-white mb-0" id="headerTitle" style="font-size: 0.95rem;">Live Orders</h6>
+            <h6 class="fw-semibold text-white mb-0" id="headerTitle" style="font-size: 0.95rem;">បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ</h6>
         </div>
         <div class="revenue-badge">
             $<%= grandTotal.toFixed(2) %>
@@ -273,7 +270,7 @@
             <div class="profile-avatar">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
             </div>
-            <h6 class="fw-semibold text-white mb-1" style="font-size: 0.9rem;">Coffee POS</h6>
+            <h6 class="fw-semibold text-white mb-1" style="font-size: 0.9rem;">ហាងកាហ្វេ POS</h6>
             <span class="text-white-50" style="font-size: 0.75rem;">ID: <%= shopId %></span>
             <div class="mt-2">
                 <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 rounded-pill px-2 py-0.5" style="font-size: 0.7rem;">● Online</span>
@@ -283,19 +280,19 @@
         <div class="py-2 flex-grow-1">
             <div class="drawer-nav-item active" id="navOrdersBtn" onclick="switchSection('orders')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="2"></rect><line x1="9" y1="12" x2="15" y2="12"></line><line x1="9" y1="16" x2="13" y2="16"></line></svg>
-                <span>Live Orders</span>
+                <span>បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ</span>
             </div>
             <div class="drawer-nav-item" id="navHistoryBtn" onclick="switchSection('history')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                <span>Sales History</span>
+                <span>ប្រវត្តិការលក់</span>
             </div>
             <div class="drawer-nav-item" id="navMenuBtn" onclick="switchSection('menu')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                <span>Menu Setup</span>
+                <span>គ្រប់គ្រង Menu</span>
             </div>
             <div class="drawer-nav-item" id="navQrBtn" onclick="switchSection('qr')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                <span>Table QR Code</span>
+                <span>QR Code តុ</span>
             </div>
         </div>
 
@@ -306,15 +303,15 @@
 
     <div class="container py-3" style="max-width: 600px;">
 
-        <!-- SECTION 1: Live Orders -->
+        <!-- SECTION 1: បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ -->
         <div id="ordersSection" class="tab-content-section active">
             <div class="admin-card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="fw-semibold text-dark" style="font-size: 0.9rem;">Real-time Orders</span>
+                    <span class="fw-semibold text-dark" style="font-size: 0.9rem;">កុម្ម៉ង់ Real-time</span>
                     <div class="d-flex gap-2 align-items-center">
-                        <span class="badge bg-light text-secondary border rounded-pill px-2 py-1" style="font-size: 0.75rem;"><%= salesItems.length %> Orders</span>
-                        <form action="/<%= shopId %>/admin/close-shift" method="POST" class="m-0" onsubmit="return confirm('Close shift and start a new day?')">
-                            <button type="submit" class="btn btn-sm btn-outline-danger fw-medium rounded-pill px-2.5 py-1" style="font-size: 0.75rem;">Close Shift</button>
+                        <span class="badge bg-light text-secondary border rounded-pill px-2 py-1" style="font-size: 0.75rem;"><%= salesItems.length %> កុម្ម៉ង់</span>
+                        <form action="/<%= shopId %>/admin/close-shift" method="POST" class="m-0" onsubmit="return confirm('តើអ្នកចង់បិទវេន និងប្តូរចូលថ្ងៃថ្មីមែនទេ?')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger fw-medium rounded-pill px-2.5 py-1" style="font-size: 0.75rem;">បិទវេន</button>
                         </form>
                     </div>
                 </div>
@@ -323,38 +320,38 @@
                     <table class="table table-borderless align-middle mb-0" style="font-size: 0.85rem;">
                         <thead>
                             <tr class="text-secondary border-bottom border-opacity-10" style="font-size: 0.75rem;">
-                                <th class="pb-2">Table</th>
-                                <th class="pb-2">Item</th>
-                                <th class="pb-2">Qty</th>
-                                <th class="pb-2">Note</th>
-                                <th class="pb-2">Status</th>
-                                <th class="pb-2 text-end">Action</th>
+                                <th class="pb-2">តុ</th>
+                                <th class="pb-2">ទំនិញ</th>
+                                <th class="pb-2">ចំនួន</th>
+                                <th class="pb-2">ចំណាំ</th>
+                                <th class="pb-2">ស្ថានភាព</th>
+                                <th class="pb-2 text-end">សកម្មភាព</th>
                             </tr>
                         </thead>
                         <tbody id="sales-list">
                             <% if (salesItems.length === 0) { %>
                                 <tr>
                                     <td colspan="6" class="text-center py-4 text-muted" style="font-size: 0.85rem;">
-                                        No orders today yet
+                                        មិនទាន់មានការកុម្ម៉ង់ថ្ងៃនេះទេ
                                     </td>
                                 </tr>
                             <% } %>
                             <% salesItems.forEach(s => { %>
                             <tr class="border-bottom border-opacity-10">
-                                <td><span class="badge bg-dark bg-opacity-75 rounded-2 px-1.5 py-0.5" style="font-size: 0.75rem;">T<%= s.table_num %></span></td>
+                                <td><span class="badge bg-dark bg-opacity-75 rounded-2 px-1.5 py-0.5" style="font-size: 0.75rem;">តុ <%= s.table_num %></span></td>
                                 <td class="fw-medium text-dark"><%= s.item_name %></td>
-                                <td class="text-secondary"><%= s.quantity %> <small>(Sugar: <%= s.sugar %>)</small></td>
+                                <td class="text-secondary"><%= s.quantity %> <small>(ស្ករ <%= s.sugar %>)</small></td>
                                 <td class="text-muted"><small><%= s.note || '-' %></small></td>
                                 <td id="status-cell-<%= s.id %>">
                                     <% if(s.status === 'pending') { %>
-                                        <span class="status-badge status-pending">Pending</span>
+                                        <span class="status-badge status-pending">កំពុងឆុង</span>
                                     <% } else { %>
-                                        <span class="status-badge status-ready">Ready</span>
+                                        <span class="status-badge status-ready">រួចរាល់</span>
                                     <% } %>
                                 </td>
                                 <td class="text-end" id="action-cell-<%= s.id %>">
                                     <% if(s.status === 'pending') { %>
-                                        <button type="button" class="btn btn-ios-action" onclick="markAsReady('<%= s.id %>', '<%= shopId %>')">Mark Ready</button>
+                                        <button type="button" class="btn btn-ios-action" onclick="markAsReady('<%= s.id %>', '<%= shopId %>')">ឆុងរួច</button>
                                     <% } else { %>
                                         <span class="text-muted small">-</span>
                                     <% } %>
@@ -367,39 +364,39 @@
             </div>
         </div>
 
-        <!-- SECTION 2: Sales History -->
+        <!-- SECTION 2: ប្រវត្តិការលក់ -->
         <div id="historySection" class="tab-content-section">
             <div class="admin-card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="fw-semibold text-dark" style="font-size: 0.9rem;">Sales History</span>
-                    <span class="badge bg-light text-secondary border rounded-pill px-2 py-1" style="font-size: 0.75rem;"><%= historyItems.length %> Records</span>
+                    <span class="fw-semibold text-dark" style="font-size: 0.9rem;">ប្រវត្តិការលក់កន្លងមក</span>
+                    <span class="badge bg-light text-secondary border rounded-pill px-2 py-1" style="font-size: 0.75rem;"><%= historyItems.length %> កំណត់ត្រា</span>
                 </div>
 
                 <div class="table-responsive">
                     <table class="table table-borderless align-middle mb-0" style="font-size: 0.85rem;">
                         <thead>
                             <tr class="text-secondary border-bottom border-opacity-10" style="font-size: 0.75rem;">
-                                <th class="pb-2">Date</th>
-                                <th class="pb-2">Table</th>
-                                <th class="pb-2">Item</th>
-                                <th class="pb-2">Qty</th>
-                                <th class="pb-2 text-end">Total</th>
+                                <th class="pb-2">កាលបរិច្ឆេទ</th>
+                                <th class="pb-2">តុ</th>
+                                <th class="pb-2">ទំនិញ</th>
+                                <th class="pb-2">ចំនួន</th>
+                                <th class="pb-2 text-end">សរុប</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% if (historyItems.length === 0) { %>
                                 <tr>
                                     <td colspan="5" class="text-center py-4 text-muted" style="font-size: 0.85rem;">
-                                        No sales history yet
+                                        មិនទាន់មានប្រវត្តិលក់ទេ
                                     </td>
                                 </tr>
                             <% } %>
                             <% historyItems.forEach(h => { %>
                             <tr class="border-bottom border-opacity-10">
                                 <td><span class="text-secondary" style="font-size: 0.75rem;"><%= h.shift_date %></span></td>
-                                <td><span class="badge bg-dark bg-opacity-75 rounded-2 px-1.5 py-0.5" style="font-size: 0.75rem;">T<%= h.table_num %></span></td>
+                                <td><span class="badge bg-dark bg-opacity-75 rounded-2 px-1.5 py-0.5" style="font-size: 0.75rem;">តុ <%= h.table_num %></span></td>
                                 <td class="fw-medium text-dark"><%= h.item_name %></td>
-                                <td class="text-secondary"><%= h.quantity %> <small>(Sugar: <%= h.sugar %>)</small></td>
+                                <td class="text-secondary"><%= h.quantity %> <small>(ស្ករ <%= h.sugar %>)</small></td>
                                 <td class="text-success fw-semibold text-end">$<%= h.total_price.toFixed(2) %></td>
                             </tr>
                             <% }); %>
@@ -409,30 +406,30 @@
             </div>
         </div>
 
-        <!-- SECTION 3: Menu Setup -->
+        <!-- SECTION 3: គ្រប់គ្រង Menu -->
         <div id="menuSection" class="tab-content-section">
             <div class="admin-card">
-                <span class="fw-semibold mb-3 d-block text-dark" style="font-size: 0.9rem;">Add New Menu</span>
+                <span class="fw-semibold mb-3 d-block text-dark" style="font-size: 0.9rem;">បន្ថែម Menu ថ្មី</span>
                 <form action="/<%= shopId %>/admin/menu/add" method="POST" enctype="multipart/form-data" class="mb-4 pb-3 border-bottom border-opacity-10" onsubmit="saveTabState('menu')">
                     <div class="mb-2">
-                        <label class="form-label text-secondary" style="font-size: 0.75rem;">Item Name</label>
-                        <input type="text" name="name" class="form-control ios-input" required placeholder="e.g. Latte">
+                        <label class="form-label text-secondary" style="font-size: 0.75rem;">ឈ្មោះភេសជ្ជៈ</label>
+                        <input type="text" name="name" class="form-control ios-input" required placeholder="ឧ. ឡាតេ">
                     </div>
                     <div class="mb-2">
-                        <label class="form-label text-secondary" style="font-size: 0.75rem;">Price ($)</label>
+                        <label class="form-label text-secondary" style="font-size: 0.75rem;">តម្លៃ ($)</label>
                         <input type="number" step="0.01" name="price" class="form-control ios-input" required placeholder="2.50">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label text-secondary" style="font-size: 0.75rem;">Image</label>
+                        <label class="form-label text-secondary" style="font-size: 0.75rem;">រូបភាពភេសជ្ជៈ</label>
                         <input type="file" name="image" class="form-control ios-input" accept="image/*">
                     </div>
-                    <button type="submit" class="btn btn-ios-primary w-100">Save Item</button>
+                    <button type="submit" class="btn btn-ios-primary w-100">រក្សាទុក</button>
                 </form>
 
-                <span class="fw-semibold mb-2 d-block text-dark" style="font-size: 0.9rem;">Menu List</span>
+                <span class="fw-semibold mb-2 d-block text-dark" style="font-size: 0.9rem;">បញ្ជី Menu ដែលមាន</span>
                 <ul class="list-group list-group-flush bg-transparent" style="font-size: 0.85rem;">
                     <% if (menuItems.length === 0) { %>
-                        <li class="list-group-item bg-transparent text-center text-muted py-3">No menu items available</li>
+                        <li class="list-group-item bg-transparent text-center text-muted py-3">មិនទាន់មាន Menu ទេ</li>
                     <% } %>
                     <% menuItems.forEach(m => { %>
                     <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-0 py-2 border-bottom border-opacity-10">
@@ -448,7 +445,7 @@
                             </div>
                         </div>
                         <form action="/<%= shopId %>/admin/menu/delete/<%= m.id %>" method="POST" class="m-0" onsubmit="saveTabState('menu')">
-                            <button type="submit" class="btn btn-ios-delete" onclick="return confirm('Delete this item?')">Delete</button>
+                            <button type="submit" class="btn btn-ios-delete" onclick="return confirm('លុប Menu នេះ?')">លុប</button>
                         </form>
                     </li>
                     <% }); %>
@@ -456,15 +453,15 @@
             </div>
         </div>
 
-        <!-- SECTION 4: Table QR Code -->
+        <!-- SECTION 4: QR Code តុ -->
         <div id="qrSection" class="tab-content-section">
             <div class="admin-card text-center">
-                <span class="fw-semibold mb-1 d-block text-dark" style="font-size: 0.9rem;">Table QR Code</span>
-                <p class="text-muted mb-3" style="font-size: 0.75rem;">Scan to select table number</p>
+                <span class="fw-semibold mb-1 d-block text-dark" style="font-size: 0.9rem;">QR Code សម្រាប់តុហាង</span>
+                <p class="text-muted mb-3" style="font-size: 0.75rem;">Scan រួចជ្រើសរើសលេខតុដោយខ្លួនឯង</p>
                 
                 <div class="qr-card">
                     <img src="/qrcodes/master.png" alt="Master QR Code" class="img-fluid mb-2">
-                    <a href="/qrcodes/master.png" download="Shop-Master-QR.png" class="btn btn-sm btn-dark w-100 rounded-2 py-1.5 fw-medium" style="font-size: 0.8rem;">Download QR Code</a>
+                    <a href="/qrcodes/master.png" download="Shop-Master-QR.png" class="btn btn-sm btn-dark w-100 rounded-2 py-1.5 fw-medium" style="font-size: 0.8rem;">ទាញយក QR Code</a>
                 </div>
             </div>
         </div>
@@ -521,19 +518,19 @@
             if (section === 'orders') {
                 ordersSec.classList.add('active');
                 navOrdersBtn.classList.add('active');
-                headerTitle.innerText = "Live Orders";
+                headerTitle.innerText = "បញ្ជីកុម្ម៉ង់ថ្ងៃនេះ";
             } else if (section === 'history') {
                 historySec.classList.add('active');
                 navHistoryBtn.classList.add('active');
-                headerTitle.innerText = "Sales History";
+                headerTitle.innerText = "ប្រវត្តិការលក់";
             } else if (section === 'menu') {
                 menuSec.classList.add('active');
                 navMenuBtn.classList.add('active');
-                headerTitle.innerText = "Menu Setup";
+                headerTitle.innerText = "គ្រប់គ្រង Menu";
             } else if (section === 'qr') {
                 qrSec.classList.add('active');
                 navQrBtn.classList.add('active');
-                headerTitle.innerText = "Table QR Code";
+                headerTitle.innerText = "QR Code តុ";
             }
         }
 
@@ -542,11 +539,12 @@
             switchSection(savedTab);
         });
 
+        // មុខងារ AJAX សម្រាប់ចុចប៊ូតុង "ឆុងរួច" ដោយមិនបាច់ Refresh ញាក់អេក្រង់
         function markAsReady(orderId, currentShopId) {
             const actionCell = document.getElementById('action-cell-' + orderId);
             const statusCell = document.getElementById('status-cell-' + orderId);
 
-            actionCell.innerHTML = '<small class="text-muted">Updating...</small>';
+            actionCell.innerHTML = '<small class="text-muted">កំពុងធ្វើ...</small>';
 
             fetch(`/${currentShopId}/admin/order-status`, {
                 method: 'POST',
@@ -560,17 +558,17 @@
             })
             .then(res => {
                 if (res.ok) {
-                    statusCell.innerHTML = '<span class="status-badge status-ready">Ready</span>';
+                    statusCell.innerHTML = '<span class="status-badge status-ready">រួចរាល់</span>';
                     actionCell.innerHTML = '<span class="text-muted small">-</span>';
                 } else {
-                    alert("Error saving!");
-                    actionCell.innerHTML = `<button type="button" class="btn btn-ios-action" onclick="markAsReady('${orderId}', '${currentShopId}')">Mark Ready</button>`;
+                    alert("មានបញ្ហាក្នុងការរក្សាទុក!");
+                    actionCell.innerHTML = `<button type="button" class="btn btn-ios-action" onclick="markAsReady('${orderId}', '${currentShopId}')">ឆុងរួច</button>`;
                 }
             })
             .catch(err => {
                 console.error(err);
                 alert("Fail to connect server!");
-                actionCell.innerHTML = `<button type="button" class="btn btn-ios-action" onclick="markAsReady('${orderId}', '${currentShopId}')">Mark Ready</button>`;
+                actionCell.innerHTML = `<button type="button" class="btn btn-ios-action" onclick="markAsReady('${orderId}', '${currentShopId}')">ឆុងរួច</button>`;
             });
         }
 
@@ -586,10 +584,13 @@
 
         socket.on('new_order', () => { 
             window.parent.postMessage('NEW_ORDER', '*');
+            // បើចង់ឱ្យមានកុម្ម៉ង់ថ្មីចូលមកហើយស្វ័យប្រវត្តិ update អាចទុក window.location.reload() ឬបើចង់អត់ឱ្យញាក់សោះ អាចលុបវាចេញ
             window.location.reload(); 
         });
 
+        // បានលុប window.location.reload() ចេញពីទីនេះ ដើម្បីកុំឱ្យវា Refresh ពេលចុចឆុងរួច
         socket.on('customer_confirmed', () => {});
+        
         socket.on('menu_updated', () => { window.location.reload(); });
         socket.on('reconnect', () => { window.location.reload(); });
     </script>
